@@ -5,6 +5,8 @@ services:
   # ============================================================
   # ZOOKEEPER (required by Kafka)
   # ============================================================
+
+  # used by this Kafka version to manage broker metadata
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     container_name: zookeeper

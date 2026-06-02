@@ -3,12 +3,15 @@ package com.example.auth_service.service;
 import com.example.auth_service.dto.AuthResponse;
 import com.example.auth_service.dto.LoginRequest;
 import com.example.auth_service.dto.RegisterRequest;
+import com.example.auth_service.dto.UserDTO;
 import com.example.auth_service.model.User;
 import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class AuthService {
@@ -49,5 +52,15 @@ public class AuthService {
 
         String token = jwtUtil.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token, user.getId().toString(), user.getEmail());
+    }
+    public UserDTO getUserById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDTO(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail()
+        );
     }
 }

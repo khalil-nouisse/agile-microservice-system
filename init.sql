@@ -24,3 +24,19 @@ GRANT ALL PRIVILEGES ON DATABASE project_db TO project_user;
 GRANT ALL PRIVILEGES ON DATABASE workitem_db TO workitem_user;
 GRANT ALL PRIVILEGES ON DATABASE sprint_db TO sprint_user;
 GRANT ALL PRIVILEGES ON DATABASE notification_db TO notification_user;
+
+-- After existing grants, add these:
+\c auth_db
+GRANT ALL ON SCHEMA public TO auth_user;
+
+\c project_db
+GRANT ALL ON SCHEMA public TO project_user;
+
+\c workitem_db
+GRANT ALL ON SCHEMA public TO workitem_user;
+
+\c sprint_db
+GRANT ALL ON SCHEMA public TO sprint_user;
+
+\c notification_db
+GRANT ALL ON SCHEMA public TO notification_user;

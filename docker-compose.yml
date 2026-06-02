@@ -152,6 +152,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: auth_user
       SPRING_DATASOURCE_PASSWORD: auth_pass
+      SPRING_PROFILES_ACTIVE: docker
     networks:
       - agile-network
     healthcheck:

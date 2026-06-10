@@ -1,5 +1,1 @@
 com/example/sprint_service/SprintServiceApplicationTests.class
-com/example/sprint_service/service/SprintServiceTest.class
-com/example/sprint_service/service/SprintServiceTest$FakeSprintRepository.class
-com/example/sprint_service/service/SprintServiceTest$CapturingSprintEventPublisher.class
-com/example/sprint_service/service/SprintServiceTest$FakeSprintWorkItemRepository.class

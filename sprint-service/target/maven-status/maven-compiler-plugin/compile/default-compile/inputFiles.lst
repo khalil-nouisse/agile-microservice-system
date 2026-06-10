@@ -13,6 +13,7 @@
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/exception/NotFoundException.java
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/feign/ProjectClient.java
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/feign/WorkItemClient.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/feign/dto/UpdateWorkItemSprintRequest.java
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/feign/dto/WorkItemClientResponse.java
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/model/Sprint.java
 /Users/a/Desktop/IT/PROJECTS/agile-microservice-system/sprint-service/src/main/java/com/example/sprint_service/model/SprintStatus.java

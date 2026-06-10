@@ -1,0 +1,14 @@
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/AuthServiceApplication.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/config/SecurityConfig.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/controller/AuthController.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/dto/AuthResponse.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/dto/LoginRequest.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/dto/RegisterRequest.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/dto/UserDTO.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/exception/BadRequestException.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/exception/GlobalExceptionHandler.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/exception/NotFoundException.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/model/User.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/repository/UserRepository.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/service/AuthService.java
+/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/auth-service/src/main/java/com/example/auth_service/util/JwtUtil.java

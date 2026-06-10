@@ -1,0 +1,16 @@
+com/example/workitem_service/model/WorkItemStatus.class
+com/example/workitem_service/exception/GlobalExceptionHandler.class
+com/example/workitem_service/exception/BadRequestException.class
+com/example/workitem_service/WorkitemServiceApplication.class
+com/example/workitem_service/dto/UpdateWorkItemRequest.class
+com/example/workitem_service/model/WorkItem.class
+com/example/workitem_service/service/WorkItemService.class
+com/example/workitem_service/repository/WorkItemRepository.class
+com/example/workitem_service/model/Priority.class
+com/example/workitem_service/dto/WorkItemResponse.class
+com/example/workitem_service/model/WorkItemType.class
+com/example/workitem_service/feign/ProjectClient.class
+com/example/workitem_service/controller/WorkItemController.class
+com/example/workitem_service/dto/CreateWorkItemRequest.class
+com/example/workitem_service/event/WorkItemEventPublisher.class
+com/example/workitem_service/exception/NotFoundException.class

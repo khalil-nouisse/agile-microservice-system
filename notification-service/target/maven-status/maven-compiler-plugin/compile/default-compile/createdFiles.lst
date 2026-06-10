@@ -1,9 +1,0 @@
-com/example/notification_service/model/Notification.class
-com/example/notification_service/service/NotificationService.class
-com/example/notification_service/controller/NotificationController.class
-com/example/notification_service/model/NotificationType.class
-com/example/notification_service/kafka/WorkItemEventConsumer.class
-com/example/notification_service/NotificationServiceApplication.class
-com/example/notification_service/repository/NotificationRepository.class
-com/example/notification_service/dto/NotificationResponse.class
-com/example/notification_service/kafka/ProjectEventConsumer.class

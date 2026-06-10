@@ -1,9 +1,0 @@
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/NotificationServiceApplication.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/controller/NotificationController.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/dto/NotificationResponse.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/kafka/ProjectEventConsumer.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/kafka/WorkItemEventConsumer.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/model/Notification.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/model/NotificationType.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/repository/NotificationRepository.java
-/Users/a/Desktop/IT/PROJECTS/agile-microservice-system/notification-service/src/main/java/com/example/notification_service/service/NotificationService.java

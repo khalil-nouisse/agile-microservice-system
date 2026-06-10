@@ -1,4 +1,0 @@
-com/example/api_gateway/ApiGatewayApplication.class
-com/example/api_gateway/util/JwtUtil.class
-com/example/api_gateway/config/GatewayConfig.class
-com/example/api_gateway/filter/JwtAuthFilter.class

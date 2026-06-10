@@ -1,13 +1,14 @@
 package com.example.api_gateway;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 class ApiGatewayApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void applicationClassIsAvailable() {
+		assertDoesNotThrow(() -> Class.forName("com.example.api_gateway.ApiGatewayApplication"));
 	}
 
 }

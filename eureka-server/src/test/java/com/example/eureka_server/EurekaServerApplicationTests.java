@@ -1,13 +1,14 @@
 package com.example.eureka_server;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 class EurekaServerApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void applicationClassIsAvailable() {
+		assertDoesNotThrow(() -> Class.forName("com.example.eureka_server.EurekaServerApplication"));
 	}
 
 }

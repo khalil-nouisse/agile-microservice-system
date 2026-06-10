@@ -1,5 +1,8 @@
 package com.example.sprint_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -55,7 +58,17 @@ public class CreateSprintRequest {
         return capacity;
     }
 
+    @JsonProperty("plannedCapacity")
+    public Double getPlannedCapacity() {
+        return capacity;
+    }
+
+    @JsonAlias("plannedCapacity")
     public void setCapacity(Double capacity) {
         this.capacity = capacity;
+    }
+
+    public void setPlannedCapacity(Double plannedCapacity) {
+        this.capacity = plannedCapacity;
     }
 }

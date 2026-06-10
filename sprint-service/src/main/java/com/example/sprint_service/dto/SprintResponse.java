@@ -2,6 +2,7 @@ package com.example.sprint_service.dto;
 
 import com.example.sprint_service.model.Sprint;
 import com.example.sprint_service.model.SprintStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,6 +60,11 @@ public class SprintResponse {
     }
 
     public Double getCapacity() {
+        return capacity;
+    }
+
+    @JsonProperty("plannedCapacity")
+    public Double getPlannedCapacity() {
         return capacity;
     }
 

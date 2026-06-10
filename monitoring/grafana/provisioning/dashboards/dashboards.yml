@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Agile Microservice Dashboards
+    orgId: 1
+    folder: Agile Microservice System
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

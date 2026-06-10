@@ -2,6 +2,7 @@ package com.example.workitem_service.controller;
 
 import com.example.workitem_service.dto.CreateWorkItemRequest;
 import com.example.workitem_service.dto.UpdateWorkItemRequest;
+import com.example.workitem_service.dto.UpdateWorkItemSprintRequest;
 import com.example.workitem_service.dto.WorkItemResponse;
 import com.example.workitem_service.service.WorkItemService;
 import org.springframework.http.HttpStatus;
@@ -50,6 +51,14 @@ public class WorkItemController {
             @RequestBody UpdateWorkItemRequest request
     ) {
         return workItemService.updateWorkItem(workItemId, request);
+    }
+
+    @PutMapping("/{workItemId}/sprint")
+    public WorkItemResponse updateSprintAssignment(
+            @PathVariable UUID workItemId,
+            @RequestBody UpdateWorkItemSprintRequest request
+    ) {
+        return workItemService.updateSprintAssignment(workItemId, request.getSprintId());
     }
 
     @DeleteMapping("/{workItemId}")

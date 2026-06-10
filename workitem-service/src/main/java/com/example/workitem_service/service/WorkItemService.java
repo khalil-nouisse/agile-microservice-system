@@ -98,6 +98,8 @@ public class WorkItemService {
     public WorkItemResponse updateWorkItem(UUID workItemId, UpdateWorkItemRequest request) {
         WorkItem item = findWorkItem(workItemId);
         String previousStatus = item.getStatus().name();
+        UUID previousAssigneeId = item.getAssigneeId();
+        boolean statusChanged = request.getStatus() != null && request.getStatus() != item.getStatus();
 
         if (!isBlank(request.getTitle())) {
             item.setTitle(request.getTitle());
@@ -108,21 +110,35 @@ public class WorkItemService {
         if (request.getPriority() != null) {
             item.setPriority(request.getPriority());
         }
-        if (request.getStatus() != null) {
+        if (statusChanged) {
             item.setStatus(request.getStatus());
-            eventPublisher.publishTaskStatusChanged(item, previousStatus);
         }
         if (request.getEstimation() != null) {
             item.setEstimation(request.getEstimation());
         }
         if (request.getAssigneeId() != null) {
             item.setAssigneeId(request.getAssigneeId());
-            eventPublisher.publishTaskAssigned(item);
         }
         if (request.getSprintId() != null) {
             item.setSprintId(request.getSprintId());
         }
 
+        WorkItem saved = workItemRepository.save(item);
+
+        if (statusChanged) {
+            eventPublisher.publishTaskStatusChanged(saved, previousStatus);
+        }
+        if (saved.getAssigneeId() != null && !saved.getAssigneeId().equals(previousAssigneeId)) {
+            eventPublisher.publishTaskAssigned(saved);
+        }
+
+        return WorkItemResponse.from(saved);
+    }
+
+    @Transactional
+    public WorkItemResponse updateSprintAssignment(UUID workItemId, UUID sprintId) {
+        WorkItem item = findWorkItem(workItemId);
+        item.setSprintId(sprintId);
         return WorkItemResponse.from(workItemRepository.save(item));
     }
 

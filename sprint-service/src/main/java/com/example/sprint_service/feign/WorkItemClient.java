@@ -15,6 +15,6 @@ public interface WorkItemClient {
     @GetMapping("/api/workitems/{workItemId}")
     WorkItemClientResponse getWorkItem(@PathVariable UUID workItemId);
 
-    @PutMapping("/api/workitems/{workItemId}")
+    @PutMapping("/api/workitems/{workItemId}/sprint")
     WorkItemClientResponse updateWorkItem(@PathVariable UUID workItemId, @RequestBody UpdateWorkItemSprintRequest request);
 }

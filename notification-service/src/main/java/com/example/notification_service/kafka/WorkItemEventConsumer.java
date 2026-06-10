@@ -19,16 +19,19 @@ public class WorkItemEventConsumer {
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
 
-    // Payload: { "taskId": "...", "title": "...", "projectId": "..." }
+    // Payload: { "taskId": "...", "title": "...", "projectId": "...", "assigneeId": "..." }
     @KafkaListener(topics = "task.created", groupId = "notification-group")
     public void onTaskCreated(String message) {
         try {
             JsonNode root = objectMapper.readTree(message);
-            UUID projectId = UUID.fromString(root.get("projectId").asText());
+            UUID assigneeId = readUuid(root, "assigneeId");
             String title = root.get("title").asText();
-            notificationService.save(projectId,
-                    "New task '" + title + "' was created in your project.",
-                    NotificationType.TASK_CREATED);
+
+            if (assigneeId != null) {
+                notificationService.save(assigneeId,
+                        "A new task '" + title + "' was created and assigned to you.",
+                        NotificationType.TASK_CREATED);
+            }
         } catch (Exception e) {
             log.error("Failed to process task.created: {}", e.getMessage());
         }
@@ -39,29 +42,45 @@ public class WorkItemEventConsumer {
     public void onTaskAssigned(String message) {
         try {
             JsonNode root = objectMapper.readTree(message);
-            UUID assigneeId = UUID.fromString(root.get("assigneeId").asText());
-            UUID taskId = UUID.fromString(root.get("taskId").asText());
+            UUID assigneeId = readUuid(root, "assigneeId");
+            String title = root.path("title").asText(root.path("taskId").asText());
+            if (assigneeId == null) {
+                log.warn("Skipping task.assigned notification without assigneeId");
+                return;
+            }
             notificationService.save(assigneeId,
-                    "You have been assigned to task: " + taskId + ".",
+                    "You have been assigned to task: " + title + ".",
                     NotificationType.TASK_ASSIGNED);
         } catch (Exception e) {
             log.error("Failed to process task.assigned: {}", e.getMessage());
         }
     }
 
-    // Payload: { "taskId": "...", "previousStatus": "...", "newStatus": "..." }
+    // Payload: { "taskId": "...", "title": "...", "assigneeId": "...", "previousStatus": "...", "newStatus": "..." }
     @KafkaListener(topics = "task.status-changed", groupId = "notification-group")
     public void onTaskStatusChanged(String message) {
         try {
             JsonNode root = objectMapper.readTree(message);
-            UUID taskId = UUID.fromString(root.get("taskId").asText());
+            UUID assigneeId = readUuid(root, "assigneeId");
             String newStatus = root.get("newStatus").asText();
             String previousStatus = root.get("previousStatus").asText();
-            notificationService.save(taskId,
-                    "Task status changed from " + previousStatus + " to " + newStatus + ".",
-                    NotificationType.TASK_STATUS_CHANGED);
+            String title = root.path("title").asText(root.path("taskId").asText());
+
+            if (assigneeId != null) {
+                notificationService.save(assigneeId,
+                        "Task '" + title + "' status changed from " + previousStatus + " to " + newStatus + ".",
+                        NotificationType.TASK_STATUS_CHANGED);
+            }
         } catch (Exception e) {
             log.error("Failed to process task.status-changed: {}", e.getMessage());
         }
+    }
+
+    private UUID readUuid(JsonNode root, String fieldName) {
+        JsonNode node = root.get(fieldName);
+        if (node == null || node.isNull() || node.asText().isBlank()) {
+            return null;
+        }
+        return UUID.fromString(node.asText());
     }
 }

@@ -61,7 +61,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "5432:5432"
+      - "55432:5432"
     networks:
       - agile-network
     healthcheck:
@@ -121,8 +121,11 @@ services:
       config-server:
         condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: docker
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      JWT_SECRET: rdfko93M8NvW70IhIibp4MqryE6qciSbUCPGlP4JtIfX7wEBEbG7rRQKSN1yj9nT
     networks:
       - agile-network
     healthcheck:
@@ -138,7 +141,7 @@ services:
     build: ./auth-service
     container_name: auth-service
     ports:
-      - "8081:8081"
+      - "18081:8081"
     depends_on:
       postgres:
         condition: service_healthy
@@ -149,10 +152,13 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
       SPRING_DATASOURCE_USERNAME: auth_user
       SPRING_DATASOURCE_PASSWORD: auth_pass
       SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: rdfko93M8NvW70IhIibp4MqryE6qciSbUCPGlP4JtIfX7wEBEbG7rRQKSN1yj9nT
+      JWT_EXPIRATION: 86400000
     networks:
       - agile-network
     healthcheck:
@@ -168,7 +174,7 @@ services:
     build: ./project-service
     container_name: project-service
     ports:
-      - "8082:8082"
+      - "18082:8082"
     depends_on:
       postgres:
         condition: service_healthy
@@ -181,6 +187,7 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/project_db
       SPRING_DATASOURCE_USERNAME: project_user
       SPRING_DATASOURCE_PASSWORD: project_pass
@@ -200,7 +207,7 @@ services:
     build: ./workitem-service
     container_name: workitem-service
     ports:
-      - "8083:8083"
+      - "18083:8083"
     depends_on:
       postgres:
         condition: service_healthy
@@ -213,6 +220,7 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/workitem_db
       SPRING_DATASOURCE_USERNAME: workitem_user
       SPRING_DATASOURCE_PASSWORD: workitem_pass
@@ -232,7 +240,7 @@ services:
     build: ./sprint-service
     container_name: sprint-service
     ports:
-      - "8084:8084"
+      - "18084:8084"
     depends_on:
       postgres:
         condition: service_healthy
@@ -245,6 +253,7 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/sprint_db
       SPRING_DATASOURCE_USERNAME: sprint_user
       SPRING_DATASOURCE_PASSWORD: sprint_pass
@@ -264,7 +273,7 @@ services:
     build: ./notification-service
     container_name: notification-service
     ports:
-      - "8085:8085"
+      - "18085:8085"
     depends_on:
       postgres:
         condition: service_healthy
@@ -277,6 +286,7 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_URI: http://config-server:8888
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/notification_db
       SPRING_DATASOURCE_USERNAME: notification_user
       SPRING_DATASOURCE_PASSWORD: notification_pass

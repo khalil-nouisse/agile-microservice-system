@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgileFlow — Sign In</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #F7F5F0;
+      --cream2:  #F0EEE9;
+      --white:   #FFFFFF;
+      --border:  #E2DFD8;
+      --text:    #1C2333;
+      --text-2:  #526070;
+      --text-3:  #8C97A3;
+      --blue:    #1868DB;
+      --blue-bg: #EBF2FF;
+      --red:     #B91C1C;
+      --red-bg:  #FEE8E8;
+      --green:   #1A7A52;
+      --green-bg: #E4F4ED;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 14px;
+      background: var(--cream);
+      color: var(--text);
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Left brand panel ── */
+    .brand-panel {
+      width: 420px;
+      flex-shrink: 0;
+      background: var(--cream);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 52px;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+    .brand-logo-icon {
+      width: 36px; height: 36px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-logo-icon svg { color: #fff; width: 20px; height: 20px; }
+    .brand-logo-name { font-size: 18px; font-weight: 700; color: var(--text); }
+
+    .brand-headline {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -.4px;
+      line-height: 1.25;
+      margin-bottom: 14px;
+      color: var(--text);
+    }
+    .brand-sub {
+      font-size: 14px;
+      color: var(--text-2);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .brand-features { display: flex; flex-direction: column; gap: 12px; }
+    .brand-feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-2);
+    }
+    .brand-feature-icon {
+      width: 22px; height: 22px;
+      background: var(--blue-bg);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .brand-feature-icon svg { width: 12px; height: 12px; color: var(--blue); }
+
+    /* ── Right form panel ── */
+    .form-panel {
+      flex: 1;
+      background: var(--white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
+      overflow-y: auto;
+    }
+
+    .form-box { width: 100%; max-width: 380px; }
+
+    .form-heading { font-size: 20px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 4px; }
+    .form-sub { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+
+    /* tabs */
+    .form-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .form-tab {
+      padding: 8px 0;
+      margin-right: 24px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: inherit;
+      transition: color .12s;
+    }
+    .form-tab:hover { color: var(--text); }
+    .form-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+    .form-tab:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+    /* form fields */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
+
+    .field { margin-bottom: 16px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      margin-bottom: 5px;
+    }
+    .field input {
+      width: 100%;
+      padding: 8px 11px;
+      font: 13px/1.5 inherit;
+      color: var(--text);
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color .12s, box-shadow .12s;
+    }
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(24,104,219,.12);
+    }
+    .field input::placeholder { color: var(--text-3); }
+    .field input.error { border-color: var(--red); }
+    .field input.error:focus { box-shadow: 0 0 0 3px rgba(185,28,28,.1); }
+
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-right: 38px; }
+    .pw-toggle {
+      position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-3); padding: 2px;
+      display: flex; align-items: center;
+    }
+    .pw-toggle:hover { color: var(--text-2); }
+    .pw-toggle:focus-visible { outline: 2px solid var(--blue); border-radius: 3px; }
+    .pw-toggle svg { width: 15px; height: 15px; }
+
+    /* error / success alerts */
+    .alert {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .alert.visible { display: flex; }
+    .alert-error { background: var(--red-bg); color: var(--red); border: 1px solid #F5C0C0; }
+    .alert-success { background: var(--green-bg); color: var(--green); border: 1px solid #A7DCC3; }
+    .alert svg { width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* submit button */
+    .btn-submit {
+      width: 100%;
+      padding: 9px 16px;
+      background: var(--blue);
+      color: #fff;
+      font: 600 13px/1 inherit;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      transition: filter .1s;
+      margin-top: 4px;
+    }
+    .btn-submit:hover:not(:disabled) { filter: brightness(.9); }
+    .btn-submit:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-submit svg { width: 14px; height: 14px; animation: spin .7s linear infinite; display: none; }
+    .btn-submit.loading svg { display: block; }
+    .btn-submit.loading .btn-text { opacity: .7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--text-3);
+    }
+    .form-footer a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .form-footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 680px) {
+      .brand-panel { display: none; }
+      .form-panel { padding: 32px 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- Brand panel -->
+  <aside class="brand-panel" aria-label="AgileFlow branding">
+    <div class="brand-logo">
+      <div class="brand-logo-icon" aria-hidden="true">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      </div>
+      <span class="brand-logo-name">AgileFlow</span>
+    </div>
+
+    <h1 class="brand-headline">Plan, track, and ship great software.</h1>
+    <p class="brand-sub">AgileFlow brings your sprints, backlog, and team into one clean workspace — built on a microservice architecture.</p>
+
+    <div class="brand-features">
+      <div class="brand-feature">
+        <div class="brand-feature-icon" aria-hidden="true">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2m-6-3v-4m6 7V7a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        Sprint boards and backlog management
+      </div>
+      <div class="brand-feature">
+        <div class="brand-feature-icon" aria-hidden="true">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        Real-time team collaboration
+      </div>
+      <div class="brand-feature">
+        <div class="brand-feature-icon" aria-hidden="true">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </div>
+        Velocity reports and burndown charts
+      </div>
+    </div>
+  </aside>
+
+  <!-- Form panel -->
+  <main class="form-panel">
+    <div class="form-box">
+
+      <div class="form-tabs" role="tablist" aria-label="Authentication mode">
+        <button class="form-tab active" id="tab-signin" role="tab" aria-selected="true" aria-controls="section-signin" tabindex="0">Sign In</button>
+        <button class="form-tab" id="tab-signup" role="tab" aria-selected="false" aria-controls="section-signup" tabindex="0">Create Account</button>
+      </div>
+
+      <!-- Sign In -->
+      <div id="section-signin" class="form-section active" role="tabpanel" aria-labelledby="tab-signin">
+        <h2 class="form-heading">Welcome back</h2>
+        <p class="form-sub">Sign in to your AgileFlow workspace</p>
+
+        <div id="signin-alert" class="alert alert-error" role="alert" aria-live="polite">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="signin-alert-text"></span>
+        </div>
+
+        <form id="form-signin" novalidate>
+          <div class="field">
+            <label for="signin-email">Email address</label>
+            <input type="email" id="signin-email" name="email" autocomplete="email"
+                   placeholder="you@example.com" required spellcheck="false" />
+          </div>
+          <div class="field">
+            <label for="signin-password">Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="signin-password" name="password"
+                     autocomplete="current-password" placeholder="••••••••" required />
+              <button type="button" class="pw-toggle" aria-label="Show password" data-target="signin-password">
+                <svg id="eye-signin-show" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg id="eye-signin-hide" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none"><path stroke-linecap="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-signin">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="btn-text">Sign In</span>
+          </button>
+        </form>
+
+        <p class="form-footer">
+          Don't have an account?
+          <a onclick="switchTab('signup')">Create one</a>
+        </p>
+      </div>
+
+      <!-- Sign Up -->
+      <div id="section-signup" class="form-section" role="tabpanel" aria-labelledby="tab-signup">
+        <h2 class="form-heading">Create your account</h2>
+        <p class="form-sub">Start managing your projects with AgileFlow</p>
+
+        <div id="signup-alert" class="alert alert-error" role="alert" aria-live="polite">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="signup-alert-text"></span>
+        </div>
+
+        <form id="form-signup" novalidate>
+          <div class="field field-row">
+            <div>
+              <label for="signup-firstname">First name</label>
+              <input type="text" id="signup-firstname" name="firstName"
+                     autocomplete="given-name" placeholder="Alae" required />
+            </div>
+            <div>
+              <label for="signup-lastname">Last name</label>
+              <input type="text" id="signup-lastname" name="lastName"
+                     autocomplete="family-name" placeholder="Rhazouani" required />
+            </div>
+          </div>
+          <div class="field">
+            <label for="signup-email">Email address</label>
+            <input type="email" id="signup-email" name="email"
+                   autocomplete="email" placeholder="you@example.com" required spellcheck="false" />
+          </div>
+          <div class="field">
+            <label for="signup-password">Password</label>
+            <div class="pw-wrap">
+              <input type="password" id="signup-password" name="password"
+                     autocomplete="new-password" placeholder="At least 8 characters" required minlength="8" />
+              <button type="button" class="pw-toggle" aria-label="Show password" data-target="signup-password">
+                <svg id="eye-signup-show" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <svg id="eye-signup-hide" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="display:none"><path stroke-linecap="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btn-signup">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="btn-text">Create Account</span>
+          </button>
+        </form>
+
+        <p class="form-footer">
+          Already have an account?
+          <a onclick="switchTab('signin')">Sign in</a>
+        </p>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+  const API = 'http://localhost:8080';
+
+  // ── Tab switching ──────────────────────────────────────────
+  function switchTab(tab) {
+    document.querySelectorAll('.form-tab').forEach(t => { t.classList.remove('active'); t.setAttribute('aria-selected', 'false'); });
+    document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+
+    const tabEl = document.getElementById('tab-' + tab);
+    const sectionEl = document.getElementById('section-' + tab);
+    tabEl.classList.add('active');
+    tabEl.setAttribute('aria-selected', 'true');
+    sectionEl.classList.add('active');
+
+    clearAlerts();
+  }
+
+  document.querySelectorAll('.form-tab').forEach(t => {
+    t.addEventListener('click', () => switchTab(t.id.replace('tab-', '')));
+    t.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(t.id.replace('tab-', '')); }
+    });
+  });
+
+  // ── Password toggle ────────────────────────────────────────
+  document.querySelectorAll('.pw-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.dataset.target;
+      const input = document.getElementById(targetId);
+      const showIcon = btn.querySelector('[id$="-show"]');
+      const hideIcon = btn.querySelector('[id$="-hide"]');
+      if (input.type === 'password') {
+        input.type = 'text';
+        showIcon.style.display = 'none';
+        hideIcon.style.display = 'block';
+        btn.setAttribute('aria-label', 'Hide password');
+      } else {
+        input.type = 'password';
+        showIcon.style.display = 'block';
+        hideIcon.style.display = 'none';
+        btn.setAttribute('aria-label', 'Show password');
+      }
+    });
+  });
+
+  // ── Alerts ────────────────────────────────────────────────
+  function showAlert(prefix, msg) {
+    const el = document.getElementById(prefix + '-alert');
+    document.getElementById(prefix + '-alert-text').textContent = msg;
+    el.classList.add('visible');
+  }
+  function clearAlerts() {
+    document.querySelectorAll('.alert').forEach(a => a.classList.remove('visible'));
+  }
+
+  // ── Loading state ─────────────────────────────────────────
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.classList.toggle('loading', loading);
+  }
+
+  // ── Auth API calls ────────────────────────────────────────
+  async function apiPost(path, body) {
+    const res = await fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || data.error || `Error ${res.status}`);
+    }
+    return data;
+  }
+
+  function saveAuth(data) {
+    localStorage.setItem('af_token', data.token);
+    localStorage.setItem('af_userId', data.userId);
+    localStorage.setItem('af_email', data.email);
+  }
+
+  // ── Sign In ───────────────────────────────────────────────
+  document.getElementById('form-signin').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearAlerts();
+
+    const email = document.getElementById('signin-email').value.trim();
+    const password = document.getElementById('signin-password').value;
+
+    if (!email || !password) {
+      showAlert('signin', 'Please fill in all fields.');
+      return;
+    }
+
+    setLoading('btn-signin', true);
+    try {
+      const data = await apiPost('/api/auth/login', { email, password });
+      saveAuth(data);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert('signin', err.message || 'Invalid email or password.');
+    } finally {
+      setLoading('btn-signin', false);
+    }
+  });
+
+  // ── Sign Up ───────────────────────────────────────────────
+  document.getElementById('form-signup').addEventListener('submit', async e => {
+    e.preventDefault();
+    clearAlerts();
+
+    const firstName = document.getElementById('signup-firstname').value.trim();
+    const lastName  = document.getElementById('signup-lastname').value.trim();
+    const email     = document.getElementById('signup-email').value.trim();
+    const password  = document.getElementById('signup-password').value;
+
+    if (!firstName || !lastName || !email || !password) {
+      showAlert('signup', 'Please fill in all fields.');
+      return;
+    }
+    if (password.length < 8) {
+      showAlert('signup', 'Password must be at least 8 characters.');
+      return;
+    }
+
+    setLoading('btn-signup', true);
+    try {
+      const data = await apiPost('/api/auth/register', { firstName, lastName, email, password });
+      saveAuth(data);
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      showAlert('signup', err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading('btn-signup', false);
+    }
+  });
+
+  // ── Redirect if already logged in ────────────────────────
+  if (localStorage.getItem('af_token')) {
+    window.location.href = 'dashboard.html';
+  }
+</script>
+</body>
+</html>

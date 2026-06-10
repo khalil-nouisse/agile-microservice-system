@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgileFlow</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:     #F7F5F0;
+      --cream2:    #F0EEE9;
+      --white:     #FFFFFF;
+      --border:    #E2DFD8;
+      --border-lt: #ECE9E3;
+
+      --text:   #1C2333;
+      --text-2: #526070;
+      --text-3: #8C97A3;
+
+      --blue:    #1868DB;
+      --blue-bg: #EBF2FF;
+      --blue-mid: #C5D9F8;
+
+      --green:   #1A7A52;
+      --green-bg: #E4F4ED;
+      --amber:   #C07800;
+      --amber-bg: #FEF4DC;
+      --red:     #B91C1C;
+      --red-bg:  #FEE8E8;
+      --purple:  #5B4ED4;
+      --purple-bg: #EDEAFF;
+      --teal:    #0E7C86;
+      --teal-bg: #E0F5F7;
+
+      --shadow-xs: 0 1px 2px rgba(0,0,0,.06);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+    }
+
+    html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--cream); color: var(--text); font-size: 13px; line-height: 1.5; }
+
+    #app { display: flex; height: 100vh; }
+
+    /* ── Sidebar ── */
+    #sidebar { width: 232px; flex-shrink: 0; background: var(--white); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+    .sidebar-top { padding: 14px 12px 8px; border-bottom: 1px solid var(--border-lt); }
+    .project-switcher { display: flex; align-items: center; gap: 9px; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background .12s; border: 1px solid transparent; }
+    .project-switcher:hover { background: var(--cream); }
+    .project-switcher:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .project-logo { width: 28px; height: 28px; border-radius: 6px; background: var(--blue); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .project-meta { min-width: 0; flex: 1; }
+    .project-meta-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .project-meta-type { font-size: 11px; color: var(--text-3); }
+    .chevron svg { width: 12px; height: 12px; display: block; color: var(--text-3); }
+
+    .sidebar-section { padding: 16px 8px 4px; }
+    .sidebar-section-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; padding: 0 8px 6px; }
+    .nav-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 5px; cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 500; transition: background .1s, color .1s; text-decoration: none; border: 1px solid transparent; }
+    .nav-item:hover { background: var(--cream); color: var(--text); }
+    .nav-item:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .nav-item.active { background: var(--blue-bg); color: var(--blue); font-weight: 600; }
+    .nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+    .nav-badge { margin-left: auto; background: var(--red); color: #fff; font-size: 10px; font-weight: 700; min-width: 17px; height: 17px; border-radius: 9px; display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+
+    .sidebar-spacer { flex: 1; }
+    .sidebar-divider { height: 1px; background: var(--border-lt); margin: 8px 12px; }
+    .user-row { display: flex; align-items: center; gap: 9px; padding: 10px 16px 14px; }
+    .user-ava { width: 28px; height: 28px; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .user-info { min-width: 0; }
+    .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-handle { font-size: 11px; color: var(--text-3); }
+
+    /* ── Main ── */
+    #main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+    #topbar { height: 48px; flex-shrink: 0; background: var(--white); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; padding: 0 20px; }
+    .breadcrumb { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-2); }
+    .breadcrumb a { color: var(--text-2); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--blue); text-decoration: underline; }
+    .breadcrumb-sep { color: var(--text-3); font-size: 11px; }
+    .breadcrumb span:last-child { color: var(--text); font-weight: 500; }
+    .topbar-gap { flex: 1; }
+    .search-box { display: flex; align-items: center; gap: 7px; background: var(--cream); border: 1px solid var(--border); border-radius: 5px; padding: 5px 10px; width: 220px; transition: border-color .15s, background .15s; }
+    .search-box:focus-within { border-color: var(--blue); background: var(--white); }
+    .search-box svg { color: var(--text-3); width: 13px; height: 13px; flex-shrink: 0; }
+    .search-box input { background: none; border: none; outline: none; font: inherit; color: var(--text); width: 100%; }
+    .search-box input::placeholder { color: var(--text-3); }
+    .tb-btn { width: 32px; height: 32px; border-radius: 5px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); background: none; border: 1px solid transparent; transition: background .1s; position: relative; }
+    .tb-btn:hover { background: var(--cream); color: var(--text); }
+    .tb-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .tb-btn svg { width: 17px; height: 17px; }
+    .tb-btn .dot { width: 7px; height: 7px; background: var(--red); border-radius: 50%; border: 1.5px solid var(--white); position: absolute; top: 5px; right: 5px; }
+
+    /* ── Content ── */
+    #content { flex: 1; overflow-y: auto; background: var(--cream); }
+    .view { display: none; }
+    .view.active { display: block; }
+    .page { padding: 24px 28px; }
+    .page-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .page-title { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    .page-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Buttons ── */
+    .btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 5px; font: 500 13px/1 inherit; cursor: pointer; border: none; transition: filter .1s; }
+    .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .btn:hover:not(:disabled) { filter: brightness(.94); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn svg { width: 13px; height: 13px; }
+    .btn-primary { background: var(--blue); color: #fff; }
+    .btn-default { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+    .btn-danger  { background: var(--red-bg); color: var(--red); border: 1px solid #F5C0C0; }
+    .btn-ghost   { background: transparent; color: var(--text-2); border: 1px solid transparent; }
+
+    /* ── Stat strip ── */
+    .stat-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+    .stat-tile { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; box-shadow: var(--shadow-xs); }
+    .stat-tile-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .stat-tile-value { font-size: 24px; font-weight: 700; letter-spacing: -.4px; }
+    .stat-tile-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+    .delta-up { color: var(--green); font-weight: 600; }
+    .delta-warn { color: var(--amber); font-weight: 600; }
+
+    /* ── Sprint banner ── */
+    .sprint-banner { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; display: flex; align-items: center; gap: 24px; margin-bottom: 20px; box-shadow: var(--shadow-xs); }
+    .sprint-info { flex: 1; min-width: 0; }
+    .sprint-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--green); background: var(--green-bg); padding: 2px 8px; border-radius: 99px; margin-bottom: 6px; }
+    .sprint-tag.planned { color: var(--amber); background: var(--amber-bg); }
+    .sprint-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+    .sprint-dates { font-size: 12px; color: var(--text-3); }
+    .sprint-divider { width: 1px; height: 52px; background: var(--border); flex-shrink: 0; }
+    .sprint-progress { flex: 2; }
+    .prog-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-bottom: 5px; }
+    .prog-label strong { color: var(--text); font-weight: 600; }
+    .prog-track { height: 6px; background: var(--cream2); border-radius: 99px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 99px; transition: width .5s ease; }
+    .prog-fill.blue { background: var(--blue); }
+    .prog-fill.green { background: var(--green); }
+    .sprint-counts { display: flex; gap: 20px; flex-shrink: 0; }
+    .sprint-count { text-align: center; }
+    .sprint-count-n { font-size: 20px; font-weight: 700; }
+    .sprint-count-l { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+    /* ── Card ── */
+    .card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-xs); }
+    .card-head { display: flex; align-items: center; justify-content: space-between; padding: 13px 16px; border-bottom: 1px solid var(--border-lt); }
+    .card-title { font-size: 13px; font-weight: 600; }
+    .card-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+    .card-body { padding: 14px 16px; }
+
+    /* ── Kanban board ── */
+    .board { display: flex; gap: 14px; align-items: flex-start; overflow-x: auto; padding-bottom: 16px; }
+    .board-col { width: 280px; flex-shrink: 0; background: var(--cream2); border-radius: 8px; border: 1px solid var(--border); }
+    .board-col-head { display: flex; align-items: center; gap: 7px; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: .05em; }
+    .col-count-badge { background: var(--white); border: 1px solid var(--border); color: var(--text-3); font-size: 11px; font-weight: 600; padding: 0 6px; height: 18px; border-radius: 9px; display: flex; align-items: center; }
+    .col-add-btn { margin-left: auto; color: var(--text-3); cursor: pointer; background: none; border: none; padding: 2px; border-radius: 4px; display: flex; align-items: center; }
+    .col-add-btn:hover { background: var(--border-lt); color: var(--text-2); }
+    .col-add-btn:focus-visible { outline: 2px solid var(--blue); }
+    .col-add-btn svg { width: 14px; height: 14px; }
+    .col-items { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 6px; }
+    .issue-card { background: var(--white); border: 1px solid var(--border); border-radius: 6px; padding: 10px 11px; cursor: pointer; transition: border-color .12s, box-shadow .12s; box-shadow: var(--shadow-xs); }
+    .issue-card:hover { border-color: var(--blue-mid); box-shadow: var(--shadow-sm); }
+    .issue-card:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+    .issue-card-top { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .issue-type-icon { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .it-story { background: #E9F2FF; } .it-bug { background: #FFEBE8; } .it-task { background: #E6F3EA; }
+    .it-story svg { color: var(--blue); } .it-bug svg { color: var(--red); } .it-task svg { color: var(--green); }
+    .issue-type-icon svg { width: 9px; height: 9px; }
+    .issue-key { font-size: 11px; color: var(--text-3); font-family: 'SFMono-Regular', Consolas, monospace; }
+    .issue-priority { margin-left: auto; display: flex; align-items: center; }
+    .issue-priority svg { width: 12px; height: 12px; }
+    .issue-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.4; margin-bottom: 8px; }
+    .issue-footer { display: flex; align-items: center; gap: 6px; }
+    .issue-est { font-size: 11px; font-weight: 600; color: var(--text-3); background: var(--cream2); border: 1px solid var(--border); padding: 1px 6px; border-radius: 4px; font-variant-numeric: tabular-nums; }
+    .issue-footer-gap { flex: 1; }
+    .ava-sm { width: 20px; height: 20px; border-radius: 50%; font-size: 9px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .col-add-card { display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 5px; margin: 0 8px 8px; color: var(--text-3); font-size: 13px; cursor: pointer; border: 1px dashed var(--border); transition: border-color .12s, color .12s, background .12s; }
+    .col-add-card:hover { border-color: var(--blue-mid); color: var(--blue); background: var(--blue-bg); }
+    .col-add-card:focus-visible { outline: 2px solid var(--blue); }
+    .col-add-card svg { width: 13px; height: 13px; }
+    .pri-high { color: var(--red); } .pri-medium { color: var(--amber); } .pri-low { color: #6BAF92; }
+
+    /* ── Table ── */
+    .table-wrap { background: var(--white); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-xs); overflow: hidden; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; padding: 9px 12px; text-align: left; background: var(--cream); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .data-table td { padding: 9px 12px; border-bottom: 1px solid var(--border-lt); vertical-align: middle; }
+    .data-table tbody tr:last-child td { border-bottom: none; }
+    .data-table tbody tr:hover { background: var(--cream); }
+    .issue-link { color: var(--text); font-weight: 500; text-decoration: none; }
+    .issue-link:hover { color: var(--blue); text-decoration: underline; }
+
+    /* ── Badges ── */
+    .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 99px; }
+    .b-todo      { background: var(--cream2); color: var(--text-3); border: 1px solid var(--border); }
+    .b-inprog    { background: var(--blue-bg); color: var(--blue); }
+    .b-done      { background: var(--green-bg); color: var(--green); }
+    .b-active    { background: var(--green-bg); color: var(--green); }
+    .b-planned   { background: var(--amber-bg); color: var(--amber); }
+    .b-invited   { background: var(--amber-bg); color: var(--amber); }
+    .b-role-sm   { background: var(--blue-bg); color: var(--blue); }
+    .b-role-po   { background: var(--purple-bg); color: var(--purple); }
+    .b-role-dev  { background: var(--teal-bg); color: var(--teal); }
+    .b-role-qa   { background: var(--amber-bg); color: var(--amber); }
+
+    /* ── Projects grid ── */
+    .projects-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+    .project-card { background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; cursor: pointer; box-shadow: var(--shadow-xs); transition: border-color .12s, box-shadow .12s; }
+    .project-card:hover { border-color: var(--blue-mid); box-shadow: var(--shadow-sm); }
+    .project-card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+    .pc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .pc-logo { width: 36px; height: 36px; border-radius: 7px; font-size: 13px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .pc-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .pc-method { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; }
+    .pc-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 14px; }
+    .pc-stats { display: flex; gap: 18px; padding-top: 12px; border-top: 1px solid var(--border-lt); }
+    .pc-stat strong { display: block; font-size: 15px; font-weight: 700; }
+    .pc-stat span { font-size: 11px; color: var(--text-3); }
+
+    /* ── Members ── */
+    .member-row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border-lt); }
+    .member-row:last-child { border-bottom: none; }
+    .member-row:hover { background: var(--cream); }
+    .ava-md { width: 32px; height: 32px; border-radius: 50%; font-size: 12px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .member-meta { flex: 1; min-width: 0; }
+    .member-name { font-size: 13px; font-weight: 600; }
+    .member-email { font-size: 12px; color: var(--text-3); }
+
+    /* ── Notifications ── */
+    .notif-row { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border-lt); cursor: pointer; transition: background .1s; }
+    .notif-row:last-child { border-bottom: none; }
+    .notif-row:hover { background: var(--cream); }
+    .notif-row:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
+    .notif-row.unread { background: var(--blue-bg); }
+    .notif-row.unread:hover { background: #DDE9FA; }
+    .notif-dot-wrap { padding-top: 5px; }
+    .notif-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); flex-shrink: 0; }
+    .notif-dot.read { background: transparent; }
+    .notif-body { min-width: 0; }
+    .notif-text { font-size: 13px; line-height: 1.45; }
+    .notif-meta { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+    /* ── Analytics ── */
+    .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .vel-chart { display: flex; align-items: flex-end; gap: 10px; height: 100px; padding: 4px 0; }
+    .vel-col-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .vel-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--blue); opacity: .8; }
+    .vel-bar.current { opacity: 1; border: 1px dashed var(--blue-mid); background: var(--blue); }
+    .vel-label { font-size: 11px; color: var(--text-3); }
+    .vel-value { font-size: 11px; font-weight: 600; color: var(--blue); }
+    .progress-rows { display: flex; flex-direction: column; gap: 12px; padding: 2px 0; }
+    .pr-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+    .pr-label strong { color: var(--text); }
+    .pr-track { height: 7px; background: var(--cream2); border-radius: 99px; overflow: hidden; border: 1px solid var(--border-lt); }
+    .pr-fill { height: 100%; border-radius: 99px; }
+    .pr-fill.f-blue { background: var(--blue); } .pr-fill.f-green { background: var(--green); } .pr-fill.f-red { background: var(--red); }
+
+    /* ── Skeleton loading ── */
+    .skeleton { background: linear-gradient(90deg, var(--cream2) 25%, var(--border-lt) 50%, var(--cream2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 60px 24px; }
+    .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+
+    /* ── Toast ── */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast { display: flex; align-items: center; gap: 9px; padding: 11px 14px; border-radius: 7px; font-size: 13px; font-weight: 500; box-shadow: 0 4px 12px rgba(0,0,0,.15); min-width: 260px; max-width: 380px; animation: slideIn .2s ease; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .toast-error { background: var(--red-bg); color: var(--red); border: 1px solid #F5C0C0; }
+    .toast-success { background: var(--green-bg); color: var(--green); border: 1px solid #A7DCC3; }
+    .toast-info { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-mid); }
+    .toast svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    /* ── Modal ── */
+    .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 1000; align-items: center; justify-content: center; }
+    .modal-backdrop.open { display: flex; }
+    .modal { background: var(--white); border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,.18); width: 460px; max-width: calc(100vw - 32px); overflow: hidden; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border-lt); }
+    .modal-title { font-size: 15px; font-weight: 700; }
+    .modal-close { background: none; border: none; cursor: pointer; color: var(--text-3); padding: 4px; border-radius: 4px; display: flex; }
+    .modal-close:hover { color: var(--text); background: var(--cream); }
+    .modal-close:focus-visible { outline: 2px solid var(--blue); }
+    .modal-close svg { width: 16px; height: 16px; }
+    .modal-body { padding: 20px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border-lt); background: var(--cream); }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; }
+    .field input, .field select, .field textarea { width: 100%; padding: 7px 10px; font: 13px/1.5 inherit; color: var(--text); background: var(--white); border: 1px solid var(--border); border-radius: 5px; outline: none; transition: border-color .12s; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,104,219,.1); }
+    .field textarea { resize: vertical; min-height: 72px; }
+    .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C4C0B8; }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── SIDEBAR ── -->
+  <nav id="sidebar" aria-label="Primary navigation">
+    <div class="sidebar-top">
+      <div class="project-switcher" id="project-switcher" tabindex="0" role="button" aria-haspopup="listbox" aria-label="Switch project">
+        <div class="project-logo" id="sidebar-project-logo">–</div>
+        <div class="project-meta">
+          <div class="project-meta-name" id="sidebar-project-name">Loading…</div>
+          <div class="project-meta-type" id="sidebar-project-type">–</div>
+        </div>
+        <div class="chevron" aria-hidden="true">
+          <svg fill="none" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5l3 3 3-3"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Planning</div>
+      <a href="#" class="nav-item active" data-view="dashboard" tabindex="0" aria-current="page">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-view="board" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M9 3v18M15 3v18"/></svg>
+        Board
+      </a>
+      <a href="#" class="nav-item" data-view="backlog" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>
+        Backlog
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Project</div>
+      <a href="#" class="nav-item" data-view="projects" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></svg>
+        Projects
+      </a>
+      <a href="#" class="nav-item" data-view="team" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Team
+      </a>
+      <a href="#" class="nav-item" data-view="analytics" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Reports
+      </a>
+    </div>
+
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-divider" role="separator"></div>
+
+    <a href="#" class="nav-item" style="margin:0 8px 4px;" data-view="notifications" tabindex="0" id="notif-nav-item" aria-label="Notifications">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      Notifications
+      <span class="nav-badge" id="notif-badge" style="display:none;"></span>
+    </a>
+    <a href="#" class="nav-item" id="logout-btn" style="margin:0 8px 4px;" tabindex="0">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Sign Out
+    </a>
+
+    <div class="sidebar-divider" role="separator"></div>
+    <div class="user-row">
+      <div class="user-ava" id="sidebar-user-ava" style="background:var(--blue);" aria-hidden="true">–</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebar-user-name">Loading…</div>
+        <div class="user-handle" id="sidebar-user-email">–</div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <div id="main">
+    <header id="topbar">
+      <nav class="breadcrumb" aria-label="Breadcrumb">
+        <a href="#" id="bc-project">–</a>
+        <span class="breadcrumb-sep" aria-hidden="true">/</span>
+        <span id="bc-page">Dashboard</span>
+      </nav>
+      <div class="topbar-gap"></div>
+      <div class="search-box" role="search">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" placeholder="Search issues…" aria-label="Search" />
+      </div>
+      <button class="tb-btn" id="topbar-notif-btn" aria-label="Notifications">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        <span class="dot" id="topbar-notif-dot" style="display:none;" aria-hidden="true"></span>
+      </button>
+      <div class="user-ava" id="topbar-user-ava" style="width:30px;height:30px;font-size:11px;cursor:pointer;background:var(--blue);" tabindex="0" role="button" aria-label="User menu">–</div>
+    </header>
+
+    <div id="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div id="view-dashboard" class="view active">
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Dashboard</h1>
+              <div id="dash-subtitle" style="font-size:13px;color:var(--text-2);margin-top:3px;"></div>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-default" onclick="openModal('issue')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                Create Issue
+              </button>
+              <button class="btn btn-primary" id="dash-start-sprint-btn" style="display:none;" onclick="promptStartSprint()">Start Sprint</button>
+            </div>
+          </div>
+          <div id="dash-stats" class="stat-strip"></div>
+          <div id="dash-sprint-banner"></div>
+          <div style="display:grid;grid-template-columns:1fr 320px;gap:14px;">
+            <div class="card">
+              <div class="card-head">
+                <div><div class="card-title">Sprint Board</div><div class="card-sub" id="dash-board-sub">–</div></div>
+                <button class="btn btn-default" style="font-size:12px;padding:5px 10px;" onclick="switchView('board')">View full board</button>
+              </div>
+              <div style="padding:12px;" id="dash-board-mini"></div>
+            </div>
+            <div class="card" style="align-self:start;">
+              <div class="card-head">
+                <div class="card-title">Notifications</div>
+                <button class="btn btn-default" style="font-size:11px;padding:4px 9px;" onclick="markAllRead()">Mark all read</button>
+              </div>
+              <div id="dash-notifications"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ BOARD ══ -->
+      <div id="view-board" class="view">
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <h1 class="page-title">Board</h1>
+              <div id="board-subtitle" style="font-size:13px;color:var(--text-2);margin-top:3px;">–</div>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-default">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707L13 15.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-5.586L3.293 7.707A1 1 0 013 7V4z"/></svg>
+                Filter
+              </button>
+              <button class="btn btn-danger" id="complete-sprint-btn" style="display:none;" onclick="promptCompleteSprint()">Complete Sprint</button>
+            </div>
+          </div>
+          <div id="board-content"></div>
+        </div>
+      </div>
+
+      <!-- ══ BACKLOG ══ -->
+      <div id="view-backlog" class="view">
+        <div class="page">
+          <div class="page-head">
+            <h1 class="page-title">Backlog</h1>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="openModal('issue')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                Create Issue
+              </button>
+            </div>
+          </div>
+          <div id="backlog-content"></div>
+        </div>
+      </div>
+
+      <!-- ══ PROJECTS ══ -->
+      <div id="view-projects" class="view">
+        <div class="page">
+          <div class="page-head">
+            <h1 class="page-title">Projects</h1>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="openModal('project')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                New Project
+              </button>
+            </div>
+          </div>
+          <div id="projects-content"></div>
+        </div>
+      </div>
+
+      <!-- ══ TEAM ══ -->
+      <div id="view-team" class="view">
+        <div class="page">
+          <div class="page-head">
+            <h1 class="page-title">Team</h1>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="openModal('invite')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                Invite Member
+              </button>
+            </div>
+          </div>
+          <div id="team-content"></div>
+        </div>
+      </div>
+
+      <!-- ══ REPORTS ══ -->
+      <div id="view-analytics" class="view">
+        <div class="page">
+          <div class="page-head"><h1 class="page-title">Reports</h1></div>
+          <div id="analytics-content"></div>
+        </div>
+      </div>
+
+      <!-- ══ NOTIFICATIONS ══ -->
+      <div id="view-notifications" class="view">
+        <div class="page">
+          <div class="page-head">
+            <h1 class="page-title">Notifications</h1>
+            <div class="page-actions">
+              <button class="btn btn-default" onclick="markAllRead()">Mark all as read</button>
+            </div>
+          </div>
+          <div id="notifications-content" class="table-wrap"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ── Toast container ── -->
+<div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ── Create Project Modal ── -->
+<div class="modal-backdrop" id="modal-project" role="dialog" aria-modal="true" aria-labelledby="modal-project-title">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-project-title">Create Project</span>
+      <button class="modal-close" onclick="closeModal('project')" aria-label="Close">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-project" onsubmit="submitProject(event)">
+      <div class="modal-body">
+        <div class="field">
+          <label for="proj-name">Project name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="proj-name" placeholder="e.g. E-Commerce Platform" required />
+        </div>
+        <div class="field">
+          <label for="proj-desc">Description</label>
+          <textarea id="proj-desc" placeholder="What is this project about?"></textarea>
+        </div>
+        <div class="field">
+          <label for="proj-method">Methodology <span style="color:var(--red)">*</span></label>
+          <select id="proj-method">
+            <option value="SCRUM">Scrum</option>
+            <option value="KANBAN">Kanban</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="closeModal('project')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-project">Create Project</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Create Issue Modal ── -->
+<div class="modal-backdrop" id="modal-issue" role="dialog" aria-modal="true" aria-labelledby="modal-issue-title">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-issue-title">Create Issue</span>
+      <button class="modal-close" onclick="closeModal('issue')" aria-label="Close">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-issue" onsubmit="submitIssue(event)">
+      <div class="modal-body">
+        <div class="field">
+          <label for="issue-title">Title <span style="color:var(--red)">*</span></label>
+          <input type="text" id="issue-title" placeholder="Short, descriptive title" required />
+        </div>
+        <div class="field">
+          <label for="issue-desc">Description</label>
+          <textarea id="issue-desc" placeholder="Describe the issue…"></textarea>
+        </div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="issue-type">Type</label>
+            <select id="issue-type">
+              <option value="USER_STORY">User Story</option>
+              <option value="BUG">Bug</option>
+              <option value="TECHNICAL_TASK">Technical Task</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="issue-priority">Priority</label>
+            <select id="issue-priority">
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="issue-est">Story Points</label>
+          <input type="number" id="issue-est" min="0" max="100" placeholder="e.g. 3" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="closeModal('issue')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-issue">Create Issue</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Invite Member Modal ── -->
+<div class="modal-backdrop" id="modal-invite" role="dialog" aria-modal="true" aria-labelledby="modal-invite-title">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-invite-title">Invite Member</span>
+      <button class="modal-close" onclick="closeModal('invite')" aria-label="Close">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-invite" onsubmit="submitInvite(event)">
+      <div class="modal-body">
+        <div class="field">
+          <label for="invite-email">Email address <span style="color:var(--red)">*</span></label>
+          <input type="email" id="invite-email" placeholder="colleague@example.com" required spellcheck="false" />
+        </div>
+        <div class="field">
+          <label for="invite-role">Role</label>
+          <select id="invite-role">
+            <option value="DEV">Developer</option>
+            <option value="QA">QA</option>
+            <option value="SCRUM_MASTER">Scrum Master</option>
+            <option value="PRODUCT_OWNER">Product Owner</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="closeModal('invite')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-invite">Send Invitation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Project Switcher Dropdown ── -->
+<div id="project-dropdown" style="display:none;position:fixed;z-index:500;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;padding:6px;" role="listbox" aria-label="Select project"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────
+const API = 'http://localhost:8080';
+
+// ── State ─────────────────────────────────────────────────────────────────
+const S = {
+  user: null,
+  projects: [],
+  selectedProject: null,
+  sprints: [],
+  activeSprint: null,
+  workItems: [],
+  members: [],
+  memberNames: {}, // userId → {firstName, lastName}
+  notifications: [],
+  capacity: null,
+};
+
+// ── Auth helpers ──────────────────────────────────────────────────────────
+const getToken  = () => localStorage.getItem('af_token');
+const getUserId = () => localStorage.getItem('af_userId');
+
+function logout() {
+  localStorage.removeItem('af_token');
+  localStorage.removeItem('af_userId');
+  localStorage.removeItem('af_email');
+  window.location.href = 'login.html';
+}
+
+// ── API layer ─────────────────────────────────────────────────────────────
+function authHeaders(extra = {}) {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}`, ...extra };
+}
+
+async function apiFetch(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: { ...authHeaders(), ...(opts.headers || {}) },
+  });
+  if (res.status === 401) { logout(); return null; }
+  if (res.status === 204 || res.headers.get('content-length') === '0') return null;
+  if (!res.ok) {
+    const msg = await res.text().catch(() => `HTTP ${res.status}`);
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+const api = {
+  getUser:         (id)  => apiFetch(`/api/auth/users/${id}`),
+  getProjects:     ()    => apiFetch('/api/projects'),
+  createProject:   (b)   => apiFetch('/api/projects', { method: 'POST', body: JSON.stringify(b) }),
+  getSprints:      (pid) => apiFetch(`/api/sprints/project/${pid}`),
+  getWorkItems:    (pid) => apiFetch(`/api/workitems/project/${pid}`),
+  createWorkItem:  (b)   => apiFetch('/api/workitems', { method: 'POST', body: JSON.stringify(b) }),
+  getMembers:      (pid) => apiFetch(`/api/projects/${pid}/members`),
+  inviteMember:    (pid, b) => apiFetch(`/api/projects/${pid}/members/invitations`, { method: 'POST', body: JSON.stringify(b) }),
+  getNotifications:(uid) => apiFetch(`/api/notifications/user/${uid}`),
+  markRead:        (id)  => apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }),
+  getCapacity:     (sid) => apiFetch(`/api/sprints/${sid}/capacity`),
+  updateSprint:    (sid, b) => apiFetch(`/api/sprints/${sid}`, { method: 'PUT', body: JSON.stringify(b) }),
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const icons = {
+    error:   `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    success: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M5 13l4 4L19 7"/></svg>`,
+    info:    `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 16v-4M12 8h.01"/></svg>`,
+  };
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `${icons[type] || icons.info}<span>${escHtml(msg)}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+const AvaColors = ['#1868DB','#1A7A52','#5B4ED4','#C07800','#0E7C86','#B91C1C','#6B7280','#9333EA'];
+function strColor(s = '') {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
+  return AvaColors[Math.abs(h) % AvaColors.length];
+}
+
+function initials(name = '') {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
+
+function emailInitials(email = '') {
+  return email.slice(0, 2).toUpperCase();
+}
+
+function fmtDate(d) {
+  if (!d) return '–';
+  return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function timeAgo(d) {
+  if (!d) return '';
+  const diff = Date.now() - new Date(d).getTime();
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day}d ago`;
+  return fmtDate(d);
+}
+
+function daysLeft(endDate) {
+  if (!endDate) return null;
+  const d = Math.ceil((new Date(endDate) - Date.now()) / 86400000);
+  return d;
+}
+
+function issueTypeIcon(type) {
+  const map = {
+    USER_STORY:     `<div class="issue-type-icon it-story" aria-label="Story"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 2h6v6H2z"/></svg></div>`,
+    BUG:            `<div class="issue-type-icon it-bug" aria-label="Bug"><svg fill="currentColor" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4"/></svg></div>`,
+    TECHNICAL_TASK: `<div class="issue-type-icon it-task" aria-label="Task"><svg fill="none" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><polyline points="2,5 4,7 8,3"/></svg></div>`,
+  };
+  return map[type] || map.TECHNICAL_TASK;
+}
+
+function priorityIcon(priority) {
+  const map = {
+    HIGH:   `<span class="issue-priority pri-high" aria-label="High priority"><svg fill="currentColor" viewBox="0 0 12 12" width="12" height="12"><path d="M6 1l5 5H7v5H5V6H1z"/></svg></span>`,
+    MEDIUM: `<span class="issue-priority pri-medium" aria-label="Medium priority"><svg fill="currentColor" viewBox="0 0 12 12" width="12" height="12"><rect x="1" y="4" width="10" height="1.5" rx=".75"/><rect x="1" y="6.5" width="10" height="1.5" rx=".75"/></svg></span>`,
+    LOW:    `<span class="issue-priority pri-low" aria-label="Low priority"><svg fill="currentColor" viewBox="0 0 12 12" width="12" height="12"><path d="M6 11L1 6h4V1h2v5h4z"/></svg></span>`,
+  };
+  return map[priority] || '';
+}
+
+function issueKeyPrefix(projectName = '') {
+  return projectName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 3);
+}
+
+function assigneeAva(item) {
+  if (!item.assigneeId) return '';
+  const name = S.memberNames[item.assigneeId];
+  const label = name ? `${name.firstName} ${name.lastName}` : item.assigneeId.slice(0,6);
+  const ini   = name ? initials(`${name.firstName} ${name.lastName}`) : item.assigneeId.slice(0,2).toUpperCase();
+  const color = strColor(item.assigneeId);
+  return `<div class="ava-sm" style="background:${color};" title="${escHtml(label)}" aria-label="${escHtml(label)}">${escHtml(ini)}</div>`;
+}
+
+function roleBadge(role) {
+  const map = {
+    SCRUM_MASTER:  ['b-role-sm', 'Scrum Master'],
+    PRODUCT_OWNER: ['b-role-po', 'Product Owner'],
+    DEV:           ['b-role-dev', 'Developer'],
+    QA:            ['b-role-qa', 'QA'],
+  };
+  const [cls, label] = map[role] || ['', role];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function statusBadge(status) {
+  if (status === 'ACTIVE')  return `<span class="badge b-active">Active</span>`;
+  if (status === 'INVITED') return `<span class="badge b-invited">Invited</span>`;
+  return `<span class="badge b-todo">${status}</span>`;
+}
+
+function skeleton(h = 16, w = '100%', mb = 0) {
+  return `<div class="skeleton" style="height:${h}px;width:${w};margin-bottom:${mb}px;"></div>`;
+}
+
+// ── View switcher ─────────────────────────────────────────────────────────
+const PAGE_LABELS = {
+  dashboard:'Dashboard', board:'Board', backlog:'Backlog',
+  projects:'Projects', team:'Team', analytics:'Reports', notifications:'Notifications',
+};
+
+function switchView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item[data-view]').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  const view = document.getElementById('view-' + id);
+  if (view) view.classList.add('active');
+  const nav = document.querySelector(`.nav-item[data-view="${id}"]`);
+  if (nav) { nav.classList.add('active'); nav.setAttribute('aria-current', 'page'); }
+  document.getElementById('bc-page').textContent = PAGE_LABELS[id] || id;
+  if (id === 'board') renderBoard();
+  if (id === 'backlog') renderBacklog();
+  if (id === 'team') renderTeam();
+  if (id === 'analytics') renderAnalytics();
+  if (id === 'notifications') renderNotificationsPage();
+  if (id === 'projects') renderProjects();
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+  item.addEventListener('click', e => { e.preventDefault(); switchView(item.dataset.view); });
+  item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchView(item.dataset.view); } });
+});
+
+// ── Modal helpers ─────────────────────────────────────────────────────────
+function openModal(id) {
+  document.getElementById('modal-' + id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById('modal-' + id).classList.remove('open');
+}
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+});
+
+// ── Render: sidebar & topbar user info ────────────────────────────────────
+function renderUserInfo() {
+  const u = S.user;
+  if (!u) return;
+  const name  = `${u.firstName} ${u.lastName}`;
+  const color = strColor(u.id);
+  const ini   = initials(name);
+  document.getElementById('sidebar-user-name').textContent  = name;
+  document.getElementById('sidebar-user-email').textContent = u.email;
+  document.getElementById('sidebar-user-ava').textContent   = ini;
+  document.getElementById('sidebar-user-ava').style.background = color;
+  document.getElementById('topbar-user-ava').textContent    = ini;
+  document.getElementById('topbar-user-ava').style.background = color;
+}
+
+function renderProjectSwitcher() {
+  const p = S.selectedProject;
+  if (!p) return;
+  const abbr  = issueKeyPrefix(p.name);
+  const color = strColor(p.id);
+  document.getElementById('sidebar-project-name').textContent = p.name;
+  document.getElementById('sidebar-project-type').textContent = p.methodology + ' · ' + p.status;
+  document.getElementById('sidebar-project-logo').textContent = abbr;
+  document.getElementById('sidebar-project-logo').style.background = color;
+  document.getElementById('bc-project').textContent = p.name;
+}
+
+// ── Render: notification badge ────────────────────────────────────────────
+function renderNotifBadge() {
+  const unread = S.notifications.filter(n => !n.isRead).length;
+  const badge = document.getElementById('notif-badge');
+  const dot   = document.getElementById('topbar-notif-dot');
+  if (unread > 0) {
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.style.display = 'flex';
+    dot.style.display = 'block';
+    document.getElementById('notif-nav-item').setAttribute('aria-label', `Notifications (${unread} unread)`);
+  } else {
+    badge.style.display = 'none';
+    dot.style.display = 'none';
+  }
+}
+
+// ── Render: dashboard stats ───────────────────────────────────────────────
+function renderDashStats() {
+  const sprint = S.activeSprint;
+  const items  = sprint ? S.workItems.filter(w => w.sprintId === sprint.id) : [];
+  const done   = items.filter(w => w.status === 'DONE');
+  const total  = items.length;
+  const pct    = total > 0 ? Math.round((done.length / total) * 100) : 0;
+  const open   = S.workItems.filter(w => w.status !== 'DONE').length;
+  const highPri = S.workItems.filter(w => w.priority === 'HIGH' && w.status !== 'DONE').length;
+  const util   = S.capacity ? Math.round(S.capacity.utilizationPercent) : 0;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-tile"><div class="stat-tile-label">Active Projects</div><div class="stat-tile-value">${S.projects.filter(p=>p.status==='ACTIVE').length}</div><div class="stat-tile-sub">${S.projects.length} total</div></div>
+    <div class="stat-tile"><div class="stat-tile-label">Sprint Progress</div><div class="stat-tile-value">${pct}<span style="font-size:14px;font-weight:400;color:var(--text-3);">%</span></div><div class="stat-tile-sub">${done.length} of ${total} issues done</div></div>
+    <div class="stat-tile"><div class="stat-tile-label">Open Issues</div><div class="stat-tile-value">${open}</div><div class="stat-tile-sub">${highPri > 0 ? `<span class="delta-warn">${highPri} high priority</span>` : 'No high priority'}</div></div>
+    <div class="stat-tile"><div class="stat-tile-label">Capacity Used</div><div class="stat-tile-value">${util}<span style="font-size:14px;font-weight:400;color:var(--text-3);">%</span></div><div class="stat-tile-sub">${S.capacity ? `${S.capacity.committed} / ${S.capacity.capacity} pts` : '–'}</div></div>
+  `;
+}
+
+// ── Render: sprint banner ─────────────────────────────────────────────────
+function renderSprintBanner() {
+  const el = document.getElementById('dash-sprint-banner');
+  const sprint = S.activeSprint;
+
+  if (!sprint) {
+    const planned = S.sprints.find(s => s.status === 'PLANNED');
+    el.innerHTML = `
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:20px 24px;box-shadow:var(--shadow-xs);">
+        <div style="color:var(--text-2);font-size:13px;margin-bottom:12px;">${planned ? `Sprint "<strong>${escHtml(planned.name)}</strong>" is planned and ready to start.` : 'No active sprint. Create one to start tracking work.'}</div>
+        ${planned
+          ? `<button class="btn btn-primary" onclick="startSprint('${planned.id}')">Start Sprint</button>`
+          : `<button class="btn btn-primary" onclick="openModal('project')">Create Project</button>`}
+      </div>`;
+    return;
+  }
+
+  const items = S.workItems.filter(w => w.sprintId === sprint.id);
+  const done  = items.filter(w => w.status === 'DONE').length;
+  const inProg = items.filter(w => w.status === 'IN_PROGRESS').length;
+  const todo  = items.filter(w => w.status === 'TODO').length;
+  const pct   = items.length > 0 ? Math.round((done / items.length) * 100) : 0;
+  const util  = S.capacity ? Math.round(S.capacity.utilizationPercent) : 0;
+  const dl    = daysLeft(sprint.endDate);
+  const dlText = dl === null ? '' : dl < 0 ? '(overdue)' : dl === 0 ? '· last day' : `· ${dl} day${dl===1?'':'s'} left`;
+
+  document.getElementById('dash-board-sub').textContent = `Sprint: ${sprint.name}`;
+  document.getElementById('board-subtitle').textContent = `${sprint.name} ${dlText}`.trim();
+
+  el.innerHTML = `
+    <div class="sprint-banner">
+      <div class="sprint-info">
+        <div class="sprint-tag"><svg fill="currentColor" viewBox="0 0 10 10" width="8" height="8"><circle cx="5" cy="5" r="4"/></svg> Active Sprint</div>
+        <div class="sprint-name">${escHtml(sprint.name)}</div>
+        <div class="sprint-dates">${fmtDate(sprint.startDate)} – ${fmtDate(sprint.endDate)} ${dlText}</div>
+      </div>
+      <div class="sprint-divider" role="separator"></div>
+      <div class="sprint-progress">
+        <div class="prog-label"><span>Completion</span><strong>${pct}%</strong></div>
+        <div class="prog-track" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><div class="prog-fill blue" style="width:${pct}%"></div></div>
+        <div style="height:8px;"></div>
+        <div class="prog-label"><span>Capacity</span><strong>${util}%</strong></div>
+        <div class="prog-track" role="progressbar" aria-valuenow="${util}" aria-valuemin="0" aria-valuemax="100"><div class="prog-fill green" style="width:${util}%"></div></div>
+      </div>
+      <div class="sprint-divider" role="separator"></div>
+      <div class="sprint-counts">
+        <div class="sprint-count"><div class="sprint-count-n" style="color:var(--text-3);">${todo}</div><div class="sprint-count-l">To Do</div></div>
+        <div class="sprint-count"><div class="sprint-count-n" style="color:var(--blue);">${inProg}</div><div class="sprint-count-l">In Progress</div></div>
+        <div class="sprint-count"><div class="sprint-count-n" style="color:var(--green);">${done}</div><div class="sprint-count-l">Done</div></div>
+      </div>
+    </div>`;
+}
+
+// ── Render: issue card HTML ───────────────────────────────────────────────
+function issueCardHtml(item, faded = false) {
+  const prefix = S.selectedProject ? issueKeyPrefix(S.selectedProject.name) : 'WI';
+  const key    = `${prefix}-${item.id.slice(-4).toUpperCase()}`;
+  const est    = item.estimation != null ? `<span class="issue-est">${item.estimation} pts</span>` : '';
+  return `
+    <div class="issue-card${faded ? '" style="opacity:.55' : ''}" tabindex="0" role="article" aria-label="${escHtml(item.title)}">
+      <div class="issue-card-top">${issueTypeIcon(item.type)}<span class="issue-key">${key}</span>${priorityIcon(item.priority)}</div>
+      <div class="issue-title">${escHtml(item.title)}</div>
+      <div class="issue-footer">${est}<div class="issue-footer-gap"></div>${assigneeAva(item)}</div>
+    </div>`;
+}
+
+// ── Render: kanban board ──────────────────────────────────────────────────
+function buildKanbanHtml(items, mini = false) {
+  const groups = { TODO: [], IN_PROGRESS: [], DONE: [] };
+  items.forEach(i => { (groups[i.status] || (groups[i.status] = [])).push(i); });
+
+  const colHtml = (status, label, items) => {
+    const colStyle = mini ? 'width:auto;flex:1;' : '';
+    const addBtn   = !mini ? `<button class="col-add-btn" aria-label="Add to ${label}" onclick="openModal('issue')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg></button>` : '';
+    const addCard  = !mini ? `<div class="col-add-card" tabindex="0" role="button" onclick="openModal('issue')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg> Create issue</div>` : '';
+    return `
+      <div class="board-col" style="${colStyle}">
+        <div class="board-col-head"><span>${label}</span><span class="col-count-badge" aria-label="${items.length} items">${items.length}</span>${addBtn}</div>
+        <div class="col-items">${items.slice(0, mini ? 3 : 999).map(i => issueCardHtml(i, status === 'DONE')).join('')}
+          ${mini && items.length > 3 ? `<div style="font-size:11px;color:var(--text-3);padding:4px 2px;">+${items.length-3} more</div>` : ''}
+        </div>
+        ${addCard}
+      </div>`;
+  };
+
+  return `<div class="board" ${mini ? '' : 'aria-label="Sprint board"'}>
+    ${colHtml('TODO', 'To Do', groups.TODO)}
+    ${colHtml('IN_PROGRESS', 'In Progress', groups.IN_PROGRESS)}
+    ${colHtml('DONE', 'Done', groups.DONE)}
+  </div>`;
+}
+
+function renderDashBoardMini() {
+  const sprint = S.activeSprint;
+  if (!sprint) {
+    document.getElementById('dash-board-mini').innerHTML = `<div class="empty-state" style="padding:30px"><p>No active sprint</p></div>`;
+    return;
+  }
+  const items = S.workItems.filter(w => w.sprintId === sprint.id);
+  document.getElementById('dash-board-mini').innerHTML = buildKanbanHtml(items, true);
+}
+
+function renderBoard() {
+  const el     = document.getElementById('board-content');
+  const sprint = S.activeSprint;
+  const completeBtn = document.getElementById('complete-sprint-btn');
+
+  if (!sprint) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🏃</div><h3>No active sprint</h3><p>Start a sprint to begin tracking work on the board.</p></div>`;
+    if (completeBtn) completeBtn.style.display = 'none';
+    return;
+  }
+  if (completeBtn) completeBtn.style.display = 'inline-flex';
+  const items = S.workItems.filter(w => w.sprintId === sprint.id);
+  el.innerHTML = buildKanbanHtml(items, false);
+}
+
+// ── Render: backlog ───────────────────────────────────────────────────────
+function renderBacklog() {
+  const el = document.getElementById('backlog-content');
+  const prefix = S.selectedProject ? issueKeyPrefix(S.selectedProject.name) : 'WI';
+  const items  = S.workItems.filter(w => !w.sprintId);
+
+  if (items.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><h3>Backlog is empty</h3><p>Create issues to populate your backlog.</p><button class="btn btn-primary" onclick="openModal('issue')">Create Issue</button></div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="table-wrap">
+      <table class="data-table" aria-label="Backlog issues">
+        <thead><tr>
+          <th scope="col">Type</th><th scope="col">Key</th><th scope="col">Summary</th>
+          <th scope="col">Priority</th><th scope="col">Assignee</th>
+          <th scope="col" style="font-variant-numeric:tabular-nums;text-align:right;">Pts</th>
+        </tr></thead>
+        <tbody>
+          ${items.map(item => {
+            const key   = `${prefix}-${item.id.slice(-4).toUpperCase()}`;
+            const name  = S.memberNames[item.assigneeId];
+            const aText = name ? `${name.firstName} ${name.lastName}` : (item.assigneeId ? item.assigneeId.slice(0,8) : '—');
+            return `<tr tabindex="0" role="row">
+              <td>${issueTypeIcon(item.type)}</td>
+              <td><span style="font-size:11px;font-family:monospace;color:var(--text-3);">${key}</span></td>
+              <td><span class="issue-link">${escHtml(item.title)}</span></td>
+              <td>${priorityIcon(item.priority)}</td>
+              <td style="font-size:12px;color:var(--text-2);">${escHtml(aText)}</td>
+              <td style="font-variant-numeric:tabular-nums;text-align:right;font-size:12px;">${item.estimation != null ? item.estimation : '—'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ── Render: team ──────────────────────────────────────────────────────────
+function renderTeam() {
+  const el = document.getElementById('team-content');
+  if (S.members.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><h3>No team members yet</h3><p>Invite colleagues to collaborate on this project.</p><button class="btn btn-primary" onclick="openModal('invite')">Invite Member</button></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="table-wrap">
+      <div role="list">
+        ${S.members.map(m => {
+          const name  = S.memberNames[m.userId];
+          const label = name ? `${name.firstName} ${name.lastName}` : m.email;
+          const ini   = name ? initials(label) : emailInitials(m.email);
+          const color = strColor(m.userId || m.email);
+          return `<div class="member-row" role="listitem">
+            <div class="ava-md" style="background:${color};" aria-hidden="true">${ini}</div>
+            <div class="member-meta">
+              <div class="member-name">${escHtml(label)}</div>
+              <div class="member-email">${escHtml(m.email)}</div>
+            </div>
+            ${roleBadge(m.role)}
+            ${statusBadge(m.status)}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ── Render: notifications ─────────────────────────────────────────────────
+function notifRowHtml(n) {
+  return `
+    <div class="notif-row${n.isRead ? '' : ' unread'}" tabindex="0" role="listitem"
+         data-notif-id="${n.id}" onclick="handleMarkRead('${n.id}', this)">
+      <div class="notif-dot-wrap"><div class="notif-dot${n.isRead ? ' read' : ''}" aria-label="${n.isRead ? 'Read' : 'Unread'}"></div></div>
+      <div class="notif-body">
+        <div class="notif-text">${escHtml(n.message)}</div>
+        <div class="notif-meta">${timeAgo(n.createdAt)}</div>
+      </div>
+    </div>`;
+}
+
+function renderDashNotifications() {
+  const el = document.getElementById('dash-notifications');
+  const top5 = S.notifications.slice(0, 5);
+  if (top5.length === 0) {
+    el.innerHTML = `<div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">No notifications</div>`;
+    return;
+  }
+  el.innerHTML = `<div role="list">${top5.map(notifRowHtml).join('')}</div>`;
+}
+
+function renderNotificationsPage() {
+  const el = document.getElementById('notifications-content');
+  if (S.notifications.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔔</div><h3>All caught up</h3><p>No notifications yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = `<div role="list">${S.notifications.map(notifRowHtml).join('')}</div>`;
+}
+
+async function handleMarkRead(id, rowEl) {
+  if (rowEl.querySelector('.notif-dot.read')) return;
+  try {
+    await api.markRead(id);
+    const notif = S.notifications.find(n => n.id === id);
+    if (notif) notif.isRead = true;
+    rowEl.classList.remove('unread');
+    const dot = rowEl.querySelector('.notif-dot');
+    if (dot) { dot.classList.add('read'); dot.setAttribute('aria-label', 'Read'); }
+    renderNotifBadge();
+  } catch { /* non-critical */ }
+}
+
+async function markAllRead() {
+  const unread = S.notifications.filter(n => !n.isRead);
+  await Promise.allSettled(unread.map(n => api.markRead(n.id)));
+  S.notifications.forEach(n => n.isRead = true);
+  renderDashNotifications();
+  renderNotificationsPage();
+  renderNotifBadge();
+  toast('All notifications marked as read', 'success');
+}
+
+// ── Render: projects ──────────────────────────────────────────────────────
+function renderProjects() {
+  const el = document.getElementById('projects-content');
+  if (S.projects.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📁</div><h3>No projects yet</h3><p>Create your first project to get started.</p><button class="btn btn-primary" onclick="openModal('project')">New Project</button></div>`;
+    return;
+  }
+  const cards = S.projects.map(p => {
+    const color = strColor(p.id);
+    const abbr  = issueKeyPrefix(p.name);
+    const items = S.workItems.filter(w => true); // workItems are for selected project only
+    return `
+      <div class="project-card" tabindex="0" role="article" onclick="selectProject(${JSON.stringify({id:p.id,name:p.name}).replace(/"/g,'&quot;')})">
+        <div class="pc-top">
+          <div class="pc-logo" style="background:${color};" aria-hidden="true">${abbr}</div>
+          <div>
+            <div class="pc-name">${escHtml(p.name)}</div>
+            <div class="pc-method">${p.methodology}</div>
+          </div>
+        </div>
+        <div class="pc-desc">${escHtml(p.description || 'No description')}</div>
+        <div class="pc-stats">
+          <div class="pc-stat"><strong>${p.status === 'ACTIVE' ? 'Active' : 'Archived'}</strong><span>status</span></div>
+          <div class="pc-stat"><strong>${fmtDate(p.createdAt)}</strong><span>created</span></div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = `<div class="projects-grid">${cards.join('')}</div>`;
+}
+
+// ── Render: analytics ─────────────────────────────────────────────────────
+function renderAnalytics() {
+  const el = document.getElementById('analytics-content');
+  const sprints = S.sprints.filter(s => s.status === 'COMPLETED' || s.status === 'ACTIVE').slice(-6);
+  const allItems = S.workItems;
+  const stories = allItems.filter(w => w.type === 'USER_STORY').length;
+  const tasks   = allItems.filter(w => w.type === 'TECHNICAL_TASK').length;
+  const bugs    = allItems.filter(w => w.type === 'BUG').length;
+  const total   = allItems.length || 1;
+
+  const maxCap = Math.max(...sprints.map(s => s.capacity || 0), 1);
+
+  const velBars = sprints.length > 0
+    ? sprints.map((s, i) => {
+        const pct = Math.round((s.capacity / maxCap) * 100);
+        const isCurrent = s.status === 'ACTIVE';
+        return `<div class="vel-col-wrap">
+          <div class="vel-value">${s.capacity}</div>
+          <div class="vel-bar${isCurrent ? ' current' : ''}" style="height:${pct}%;"></div>
+          <div class="vel-label">S${S.sprints.indexOf(s)+1}</div>
+        </div>`;
+      }).join('')
+    : '<div style="padding:20px;color:var(--text-3);font-size:13px;">No sprint data yet</div>';
+
+  const burnSvg = buildBurndownSvg();
+
+  el.innerHTML = `
+    <div class="analytics-grid">
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Sprint Capacity</div><div class="card-sub">Planned story points per sprint</div></div></div>
+        <div class="card-body"><div class="vel-chart" role="img" aria-label="Sprint capacity chart">${velBars}</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div><div class="card-title">Issue Breakdown</div><div class="card-sub">All issues by type</div></div></div>
+        <div class="card-body">
+          <div class="progress-rows">
+            <div><div class="pr-label"><span>User Stories</span><strong>${stories}</strong></div><div class="pr-track"><div class="pr-fill f-blue" style="width:${Math.round(stories/total*100)}%"></div></div></div>
+            <div><div class="pr-label"><span>Technical Tasks</span><strong>${tasks}</strong></div><div class="pr-track"><div class="pr-fill f-green" style="width:${Math.round(tasks/total*100)}%"></div></div></div>
+            <div><div class="pr-label"><span>Bugs</span><strong>${bugs}</strong></div><div class="pr-track"><div class="pr-fill f-red" style="width:${Math.round(bugs/total*100)}%"></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div><div class="card-title">Sprint Burndown</div><div class="card-sub">${S.activeSprint ? S.activeSprint.name : 'No active sprint'} — capacity utilization</div></div></div>
+      ${burnSvg}
+    </div>`;
+}
+
+function buildBurndownSvg() {
+  if (!S.capacity || !S.activeSprint) return '<div style="padding:24px;color:var(--text-3);font-size:13px;text-align:center;">No active sprint data</div>';
+  const cap   = S.capacity.capacity || 0;
+  const comm  = S.capacity.committed || 0;
+  const days  = 14;
+  const start = new Date(S.activeSprint.startDate);
+  const today = new Date();
+  const daysPassed = Math.min(Math.max(0, Math.round((today - start) / 86400000)), days);
+  const idealRemaining = cap - (cap / days) * daysPassed;
+  const actualRemaining = cap - comm * (daysPassed / days);
+
+  const toY = (val) => 130 - Math.max(0, Math.min(val / cap, 1)) * 120;
+  const toX = (day) => 44 + (day / days) * 530;
+
+  const idealX2 = toX(days), idealY2 = toY(0);
+  const actualX = toX(daysPassed), actualY = toY(actualRemaining);
+
+  return `<div style="padding:12px 20px 20px;">
+    <svg viewBox="0 0 580 160" fill="none" style="display:block;width:100%;" aria-label="Burndown chart" role="img">
+      <line x1="44" y1="10" x2="44" y2="130" stroke="var(--border)" stroke-width="1"/>
+      <line x1="44" y1="130" x2="574" y2="130" stroke="var(--border)" stroke-width="1"/>
+      <line x1="44" y1="50" x2="574" y2="50" stroke="var(--border-lt)" stroke-width="1"/>
+      <line x1="44" y1="90" x2="574" y2="90" stroke="var(--border-lt)" stroke-width="1"/>
+      <text x="38" y="14" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">${cap}</text>
+      <text x="38" y="54" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">${Math.round(cap*0.67)}</text>
+      <text x="38" y="94" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">${Math.round(cap*0.33)}</text>
+      <text x="38" y="134" text-anchor="end" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">0</text>
+      <text x="44" y="148" text-anchor="middle" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">D1</text>
+      <text x="${toX(7)}" y="148" text-anchor="middle" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">D7</text>
+      <text x="574" y="148" text-anchor="middle" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">D${days}</text>
+      <line x1="44" y1="${toY(cap)}" x2="${idealX2}" y2="${idealY2}" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="5,4"/>
+      <polyline points="44,${toY(cap)} ${actualX},${actualY}" stroke="var(--blue)" stroke-width="2" stroke-linecap="round"/>
+      <polygon points="44,${toY(cap)} ${actualX},${actualY} ${actualX},130 44,130" fill="var(--blue)" opacity=".06"/>
+      ${daysPassed > 0 ? `<line x1="${actualX}" y1="10" x2="${actualX}" y2="130" stroke="var(--amber)" stroke-width="1" stroke-dasharray="3,3"/><text x="${actualX+4}" y="22" fill="var(--amber)" font-size="10" font-family="Inter,system-ui">Today</text>` : ''}
+      <line x1="450" y1="16" x2="476" y2="16" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="5,4"/>
+      <text x="480" y="20" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">Ideal</text>
+      <line x1="450" y1="30" x2="476" y2="30" stroke="var(--blue)" stroke-width="2"/>
+      <text x="480" y="34" fill="var(--text-3)" font-size="10" font-family="Inter,system-ui">Actual</text>
+    </svg>
+  </div>`;
+}
+
+// ── Full dashboard render ─────────────────────────────────────────────────
+function renderDashboard() {
+  renderDashStats();
+  renderSprintBanner();
+  renderDashBoardMini();
+  renderDashNotifications();
+  renderNotifBadge();
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────
+async function selectProject(project) {
+  S.selectedProject = typeof project === 'string'
+    ? S.projects.find(p => p.id === project)
+    : project;
+  if (!S.selectedProject) return;
+
+  renderProjectSwitcher();
+  document.getElementById('dash-subtitle').textContent = `Loading ${S.selectedProject.name}…`;
+
+  // Show skeletons while loading
+  document.getElementById('dash-stats').innerHTML = Array(4).fill(`<div class="stat-tile">${skeleton(10,60,10)}${skeleton(28,80)}</div>`).join('');
+
+  const [workItems, sprints, members, notifications] = await Promise.allSettled([
+    api.getWorkItems(S.selectedProject.id),
+    api.getSprints(S.selectedProject.id),
+    api.getMembers(S.selectedProject.id),
+    api.getNotifications(getUserId()),
+  ]);
+
+  S.workItems      = workItems.status === 'fulfilled'      ? (workItems.value      || []) : [];
+  S.sprints        = sprints.status === 'fulfilled'        ? (sprints.value        || []) : [];
+  S.members        = members.status === 'fulfilled'        ? (members.value        || []) : [];
+  S.notifications  = notifications.status === 'fulfilled'  ? (notifications.value  || []) : [];
+
+  S.activeSprint   = S.sprints.find(s => s.status === 'ACTIVE') || null;
+
+  // Resolve member names in background
+  resolveMemberNames();
+
+  // Fetch capacity for active sprint
+  if (S.activeSprint) {
+    try { S.capacity = await api.getCapacity(S.activeSprint.id); } catch { S.capacity = null; }
+  } else {
+    S.capacity = null;
+  }
+
+  const dl = S.activeSprint ? daysLeft(S.activeSprint.endDate) : null;
+  document.getElementById('dash-subtitle').textContent = S.activeSprint
+    ? `${S.selectedProject.name} · Sprint "${S.activeSprint.name}"${dl !== null ? ` · ${dl} day${dl===1?'':'s'} left` : ''}`
+    : `${S.selectedProject.name} · No active sprint`;
+
+  renderDashboard();
+}
+
+async function resolveMemberNames() {
+  const toFetch = S.members.filter(m => m.userId && !S.memberNames[m.userId]);
+  await Promise.allSettled(toFetch.map(async m => {
+    try {
+      const u = await api.getUser(m.userId);
+      if (u) S.memberNames[u.id] = { firstName: u.firstName, lastName: u.lastName };
+    } catch { /* skip */ }
+  }));
+  // Re-render after names resolved
+  renderTeam();
+  renderBoard();
+  renderBacklog();
+}
+
+// ── Sprint actions ────────────────────────────────────────────────────────
+async function startSprint(sprintId) {
+  try {
+    const s = S.sprints.find(sp => sp.id === sprintId);
+    if (!s) return;
+    await api.updateSprint(sprintId, { ...s, status: 'ACTIVE' });
+    toast('Sprint started!', 'success');
+    await selectProject(S.selectedProject);
+  } catch (e) {
+    toast('Failed to start sprint: ' + e.message, 'error');
+  }
+}
+
+function promptStartSprint() {
+  const planned = S.sprints.find(s => s.status === 'PLANNED');
+  if (planned) startSprint(planned.id);
+  else toast('No planned sprint to start.', 'info');
+}
+
+async function promptCompleteSprint() {
+  if (!S.activeSprint) return;
+  if (!confirm(`Complete sprint "${S.activeSprint.name}"? This will move it to Completed.`)) return;
+  try {
+    await api.updateSprint(S.activeSprint.id, { ...S.activeSprint, status: 'COMPLETED' });
+    toast('Sprint completed!', 'success');
+    await selectProject(S.selectedProject);
+  } catch (e) {
+    toast('Failed to complete sprint: ' + e.message, 'error');
+  }
+}
+
+// ── Form submissions ──────────────────────────────────────────────────────
+async function submitProject(e) {
+  e.preventDefault();
+  const name   = document.getElementById('proj-name').value.trim();
+  const desc   = document.getElementById('proj-desc').value.trim();
+  const method = document.getElementById('proj-method').value;
+  if (!name) return;
+  const btn = document.getElementById('btn-submit-project');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    await api.createProject({ name, description: desc, methodology: method });
+    toast('Project created!', 'success');
+    closeModal('project');
+    document.getElementById('form-project').reset();
+    S.projects = await api.getProjects() || [];
+    renderProjects();
+    if (S.selectedProject === null && S.projects.length > 0) {
+      await selectProject(S.projects[0]);
+    }
+  } catch (err) {
+    toast('Failed to create project: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Project';
+  }
+}
+
+async function submitIssue(e) {
+  e.preventDefault();
+  if (!S.selectedProject) { toast('Select a project first.', 'info'); return; }
+  const title = document.getElementById('issue-title').value.trim();
+  const desc  = document.getElementById('issue-desc').value.trim();
+  const type  = document.getElementById('issue-type').value;
+  const prio  = document.getElementById('issue-priority').value;
+  const est   = document.getElementById('issue-est').value;
+  if (!title) return;
+  const btn = document.getElementById('btn-submit-issue');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    await api.createWorkItem({
+      title, description: desc, type, priority: prio,
+      estimation: est ? parseFloat(est) : null,
+      projectId: S.selectedProject.id,
+    });
+    toast('Issue created!', 'success');
+    closeModal('issue');
+    document.getElementById('form-issue').reset();
+    S.workItems = await api.getWorkItems(S.selectedProject.id) || [];
+    renderBoard();
+    renderBacklog();
+    renderDashBoardMini();
+    renderDashStats();
+  } catch (err) {
+    toast('Failed to create issue: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Issue';
+  }
+}
+
+async function submitInvite(e) {
+  e.preventDefault();
+  if (!S.selectedProject) { toast('Select a project first.', 'info'); return; }
+  const email = document.getElementById('invite-email').value.trim();
+  const role  = document.getElementById('invite-role').value;
+  if (!email) return;
+  const btn = document.getElementById('btn-submit-invite');
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await api.inviteMember(S.selectedProject.id, { email, role });
+    toast('Invitation sent!', 'success');
+    closeModal('invite');
+    document.getElementById('form-invite').reset();
+    S.members = await api.getMembers(S.selectedProject.id) || [];
+    renderTeam();
+  } catch (err) {
+    toast('Failed to invite member: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Send Invitation';
+  }
+}
+
+// ── Project switcher dropdown ─────────────────────────────────────────────
+const dropdown = document.getElementById('project-dropdown');
+document.getElementById('project-switcher').addEventListener('click', e => {
+  if (S.projects.length <= 1) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  dropdown.style.top  = (rect.bottom + 4) + 'px';
+  dropdown.style.left = rect.left + 'px';
+  dropdown.innerHTML = S.projects.map(p => {
+    const color = strColor(p.id);
+    const abbr  = issueKeyPrefix(p.name);
+    const active = S.selectedProject?.id === p.id;
+    return `<div role="option" aria-selected="${active}" tabindex="0"
+      style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:5px;cursor:pointer;${active?'background:var(--blue-bg);':''}"
+      onclick="dropdown.style.display='none'; selectProject(${JSON.stringify({id:p.id,name:p.name}).replace(/"/g,'&quot;')})">
+      <div style="width:22px;height:22px;border-radius:4px;background:${color};color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${abbr}</div>
+      <span style="font-size:13px;font-weight:500;">${escHtml(p.name)}</span>
+    </div>`;
+  }).join('');
+  dropdown.style.display = 'block';
+});
+document.addEventListener('click', e => { if (!dropdown.contains(e.target) && e.target.id !== 'project-switcher' && !document.getElementById('project-switcher').contains(e.target)) dropdown.style.display = 'none'; });
+
+// ── Topbar buttons ────────────────────────────────────────────────────────
+document.getElementById('topbar-notif-btn').addEventListener('click', () => switchView('notifications'));
+document.getElementById('logout-btn').addEventListener('click', e => { e.preventDefault(); logout(); });
+
+// ── App init ──────────────────────────────────────────────────────────────
+async function init() {
+  const token  = getToken();
+  const userId = getUserId();
+  if (!token || !userId) { window.location.href = 'login.html'; return; }
+
+  try {
+    // Load user info and projects in parallel
+    const [user, projects] = await Promise.all([
+      api.getUser(userId),
+      api.getProjects(),
+    ]);
+
+    S.user     = user;
+    S.projects = projects || [];
+
+    renderUserInfo();
+
+    if (S.projects.length === 0) {
+      document.getElementById('sidebar-project-name').textContent = 'No projects';
+      document.getElementById('dash-subtitle').textContent = 'Create your first project to get started.';
+      document.getElementById('dash-stats').innerHTML = Array(4).fill(`<div class="stat-tile"><div class="stat-tile-value">0</div><div class="stat-tile-sub">–</div></div>`).join('');
+      renderProjects();
+      return;
+    }
+
+    await selectProject(S.projects[0]);
+  } catch (err) {
+    if (err.message.includes('401') || err.message.includes('Unauthorized')) {
+      logout();
+    } else {
+      toast('Failed to load data: ' + err.message, 'error');
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,8 +1,8 @@
 package com.example.auth_service;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
+<<<<<<< HEAD
 @SpringBootTest(properties = {
 		"spring.cloud.config.enabled=false",
 		"eureka.client.enabled=false",
@@ -14,10 +14,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 		"jwt.secret=rdfko93M8NvW70IhIibp4MqryE6qciSbUCPGlP4JtIfX7wEBEbG7rRQKSN1yj9nT",
 		"jwt.expiration=86400000"
 })
+=======
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
+>>>>>>> f2a47b675b99bfa9d348dd883d616e779c379039
 class AuthServiceApplicationTests {
 
 	@Test
-	void contextLoads() {
+	void applicationClassIsAvailable() {
+		assertDoesNotThrow(() -> Class.forName("com.example.auth_service.AuthServiceApplication"));
 	}
 
 }

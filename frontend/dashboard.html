@@ -332,6 +332,10 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path stroke-linecap="round" d="M9 3v18M15 3v18"/></svg>
         Board
       </a>
+      <a href="#" class="nav-item" data-view="sprints" tabindex="0">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Sprints
+      </a>
       <a href="#" class="nav-item" data-view="backlog" tabindex="0">
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 12h6M9 16h4"/></svg>
         Backlog
@@ -512,6 +516,22 @@
         </div>
       </div>
 
+      <!-- ══ SPRINTS ══ -->
+      <div id="view-sprints" class="view">
+        <div class="page">
+          <div class="page-head">
+            <h1 class="page-title">Sprints</h1>
+            <div class="page-actions">
+              <button class="btn btn-primary" onclick="openModal('sprint')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
+                New Sprint
+              </button>
+            </div>
+          </div>
+          <div id="sprints-content"></div>
+        </div>
+      </div>
+
       <!-- ══ NOTIFICATIONS ══ -->
       <div id="view-notifications" class="view">
         <div class="page">
@@ -650,6 +670,67 @@
   </div>
 </div>
 
+<!-- ── Create Sprint Modal ── -->
+<div class="modal-backdrop" id="modal-sprint" role="dialog" aria-modal="true" aria-labelledby="modal-sprint-title">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-sprint-title">Create Sprint</span>
+      <button class="modal-close" onclick="closeModal('sprint')" aria-label="Close">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="form-sprint" onsubmit="submitSprint(event)">
+      <div class="modal-body">
+        <div class="field">
+          <label for="sprint-name">Sprint name <span style="color:var(--red)">*</span></label>
+          <input type="text" id="sprint-name" placeholder="e.g. Sprint 1" required />
+        </div>
+        <div class="field">
+          <label for="sprint-goal">Goal</label>
+          <textarea id="sprint-goal" placeholder="What should this sprint achieve?"></textarea>
+        </div>
+        <div class="field-row-2">
+          <div class="field">
+            <label for="sprint-start">Start date <span style="color:var(--red)">*</span></label>
+            <input type="date" id="sprint-start" required />
+          </div>
+          <div class="field">
+            <label for="sprint-end">End date <span style="color:var(--red)">*</span></label>
+            <input type="date" id="sprint-end" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="sprint-capacity">Capacity (story points)</label>
+          <input type="number" id="sprint-capacity" min="0" placeholder="e.g. 40" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="closeModal('sprint')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="btn-submit-sprint">Create Sprint</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Issue Detail Modal ── -->
+<div class="modal-backdrop" id="modal-issue-detail" role="dialog" aria-modal="true" aria-labelledby="modal-issue-detail-title">
+  <div class="modal" style="width:520px;">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-issue-detail-title">Issue</span>
+      <button class="modal-close" onclick="closeModal('issue-detail')" aria-label="Close">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="issue-detail-body"></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger" id="btn-delete-issue" onclick="deleteCurrentIssue()">Delete</button>
+      <div style="flex:1;"></div>
+      <button type="button" class="btn btn-default" onclick="closeModal('issue-detail')">Close</button>
+      <button type="button" class="btn btn-primary" id="btn-save-issue" onclick="saveIssueChanges()">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Project Switcher Dropdown ── -->
 <div id="project-dropdown" style="display:none;position:fixed;z-index:500;background:var(--white);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:220px;padding:6px;" role="listbox" aria-label="Select project"></div>
 
@@ -702,18 +783,25 @@ async function apiFetch(path, opts = {}) {
 }
 
 const api = {
-  getUser:         (id)  => apiFetch(`/api/auth/users/${id}`),
-  getProjects:     ()    => apiFetch('/api/projects'),
-  createProject:   (b)   => apiFetch('/api/projects', { method: 'POST', body: JSON.stringify(b) }),
-  getSprints:      (pid) => apiFetch(`/api/sprints/project/${pid}`),
-  getWorkItems:    (pid) => apiFetch(`/api/workitems/project/${pid}`),
-  createWorkItem:  (b)   => apiFetch('/api/workitems', { method: 'POST', body: JSON.stringify(b) }),
-  getMembers:      (pid) => apiFetch(`/api/projects/${pid}/members`),
-  inviteMember:    (pid, b) => apiFetch(`/api/projects/${pid}/members/invitations`, { method: 'POST', body: JSON.stringify(b) }),
-  getNotifications:(uid) => apiFetch(`/api/notifications/user/${uid}`),
-  markRead:        (id)  => apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }),
-  getCapacity:     (sid) => apiFetch(`/api/sprints/${sid}/capacity`),
-  updateSprint:    (sid, b) => apiFetch(`/api/sprints/${sid}`, { method: 'PUT', body: JSON.stringify(b) }),
+  getUser:             (id)          => apiFetch(`/api/auth/users/${id}`),
+  getProjects:         ()            => apiFetch('/api/projects'),
+  createProject:       (b)           => apiFetch('/api/projects', { method: 'POST', body: JSON.stringify(b) }),
+  getSprints:          (pid)         => apiFetch(`/api/sprints/project/${pid}`),
+  createSprint:        (b)           => apiFetch('/api/sprints', { method: 'POST', body: JSON.stringify(b) }),
+  updateSprint:        (sid, b)      => apiFetch(`/api/sprints/${sid}`, { method: 'PUT', body: JSON.stringify(b) }),
+  deleteSprint:        (sid)         => apiFetch(`/api/sprints/${sid}`, { method: 'DELETE' }),
+  addWorkItemToSprint: (sid, b)      => apiFetch(`/api/sprints/${sid}/work-items`, { method: 'POST', body: JSON.stringify(b) }),
+  removeFromSprint:    (sid, wid)    => apiFetch(`/api/sprints/${sid}/work-items/${wid}`, { method: 'DELETE' }),
+  getCapacity:         (sid)         => apiFetch(`/api/sprints/${sid}/capacity`),
+  getWorkItems:        (pid)         => apiFetch(`/api/workitems/project/${pid}`),
+  createWorkItem:      (b)           => apiFetch('/api/workitems', { method: 'POST', body: JSON.stringify(b) }),
+  updateWorkItem:      (id, b)       => apiFetch(`/api/workitems/${id}`, { method: 'PUT', body: JSON.stringify(b) }),
+  deleteWorkItem:      (id)          => apiFetch(`/api/workitems/${id}`, { method: 'DELETE' }),
+  getMembers:          (pid)         => apiFetch(`/api/projects/${pid}/members`),
+  inviteMember:        (pid, b)      => apiFetch(`/api/projects/${pid}/members/invitations`, { method: 'POST', body: JSON.stringify(b) }),
+  assignRole:          (pid, mid, b) => apiFetch(`/api/projects/${pid}/members/${mid}/role`, { method: 'PUT', body: JSON.stringify(b) }),
+  getNotifications:    (uid)         => apiFetch(`/api/notifications/user/${uid}`),
+  markRead:            (id)          => apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }),
 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────
@@ -830,7 +918,7 @@ function skeleton(h = 16, w = '100%', mb = 0) {
 
 // ── View switcher ─────────────────────────────────────────────────────────
 const PAGE_LABELS = {
-  dashboard:'Dashboard', board:'Board', backlog:'Backlog',
+  dashboard:'Dashboard', board:'Board', backlog:'Backlog', sprints:'Sprints',
   projects:'Projects', team:'Team', analytics:'Reports', notifications:'Notifications',
 };
 
@@ -844,6 +932,7 @@ function switchView(id) {
   document.getElementById('bc-page').textContent = PAGE_LABELS[id] || id;
   if (id === 'board') renderBoard();
   if (id === 'backlog') renderBacklog();
+  if (id === 'sprints') renderSprintsPage();
   if (id === 'team') renderTeam();
   if (id === 'analytics') renderAnalytics();
   if (id === 'notifications') renderNotificationsPage();
@@ -990,7 +1079,8 @@ function issueCardHtml(item, faded = false) {
   const key    = `${prefix}-${item.id.slice(-4).toUpperCase()}`;
   const est    = item.estimation != null ? `<span class="issue-est">${item.estimation} pts</span>` : '';
   return `
-    <div class="issue-card${faded ? '" style="opacity:.55' : ''}" tabindex="0" role="article" aria-label="${escHtml(item.title)}">
+    <div class="issue-card${faded ? '" style="opacity:.55' : ''}" tabindex="0" role="article" aria-label="${escHtml(item.title)}"
+         onclick="openIssueDetail('${item.id}')" style="cursor:pointer;">
       <div class="issue-card-top">${issueTypeIcon(item.type)}<span class="issue-key">${key}</span>${priorityIcon(item.priority)}</div>
       <div class="issue-title">${escHtml(item.title)}</div>
       <div class="issue-footer">${est}<div class="issue-footer-gap"></div>${assigneeAva(item)}</div>
@@ -1059,6 +1149,7 @@ function renderBacklog() {
     return;
   }
 
+  const plannedSprints = S.sprints.filter(s => s.status === 'PLANNED' || s.status === 'ACTIVE');
   el.innerHTML = `
     <div class="table-wrap">
       <table class="data-table" aria-label="Backlog issues">
@@ -1066,19 +1157,27 @@ function renderBacklog() {
           <th scope="col">Type</th><th scope="col">Key</th><th scope="col">Summary</th>
           <th scope="col">Priority</th><th scope="col">Assignee</th>
           <th scope="col" style="font-variant-numeric:tabular-nums;text-align:right;">Pts</th>
+          <th scope="col"></th>
         </tr></thead>
         <tbody>
           ${items.map(item => {
             const key   = `${prefix}-${item.id.slice(-4).toUpperCase()}`;
             const name  = S.memberNames[item.assigneeId];
             const aText = name ? `${name.firstName} ${name.lastName}` : (item.assigneeId ? item.assigneeId.slice(0,8) : '—');
-            return `<tr tabindex="0" role="row">
-              <td>${issueTypeIcon(item.type)}</td>
+            const sprintOpts = plannedSprints.map(s => `<option value="${s.id}">${escHtml(s.name)}</option>`).join('');
+            const addBtn = plannedSprints.length > 0
+              ? `<select onchange="addToSprint('${item.id}', this)" style="font:12px inherit;border:1px solid var(--border);border-radius:4px;padding:2px 4px;color:var(--text-2);background:var(--white);cursor:pointer;">
+                   <option value="">→ Sprint</option>${sprintOpts}
+                 </select>`
+              : '';
+            return `<tr tabindex="0" role="row" onclick="openIssueDetail('${item.id}')" style="cursor:pointer;">
+              <td onclick="event.stopPropagation()">${issueTypeIcon(item.type)}</td>
               <td><span style="font-size:11px;font-family:monospace;color:var(--text-3);">${key}</span></td>
               <td><span class="issue-link">${escHtml(item.title)}</span></td>
               <td>${priorityIcon(item.priority)}</td>
               <td style="font-size:12px;color:var(--text-2);">${escHtml(aText)}</td>
               <td style="font-variant-numeric:tabular-nums;text-align:right;font-size:12px;">${item.estimation != null ? item.estimation : '—'}</td>
+              <td onclick="event.stopPropagation()">${addBtn}</td>
             </tr>`;
           }).join('')}
         </tbody>
@@ -1101,13 +1200,18 @@ function renderTeam() {
           const label = name ? `${name.firstName} ${name.lastName}` : m.email;
           const ini   = name ? initials(label) : emailInitials(m.email);
           const color = strColor(m.userId || m.email);
+          const roles = ['DEV','QA','SCRUM_MASTER','PRODUCT_OWNER'];
+          const roleLabels = {DEV:'Developer',QA:'QA',SCRUM_MASTER:'Scrum Master',PRODUCT_OWNER:'Product Owner'};
+          const roleSelect = m.userId ? `<select onchange="changeRole('${m.id}', this.value)" style="font:12px inherit;border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text-2);background:var(--white);">
+            ${roles.map(r => `<option value="${r}"${m.role===r?' selected':''}>${roleLabels[r]}</option>`).join('')}
+          </select>` : statusBadge(m.status);
           return `<div class="member-row" role="listitem">
             <div class="ava-md" style="background:${color};" aria-hidden="true">${ini}</div>
             <div class="member-meta">
               <div class="member-name">${escHtml(label)}</div>
               <div class="member-email">${escHtml(m.email)}</div>
             </div>
-            ${roleBadge(m.role)}
+            ${roleSelect}
             ${statusBadge(m.status)}
           </div>`;
         }).join('')}
@@ -1495,6 +1599,236 @@ document.addEventListener('click', e => { if (!dropdown.contains(e.target) && e.
 // ── Topbar buttons ────────────────────────────────────────────────────────
 document.getElementById('topbar-notif-btn').addEventListener('click', () => switchView('notifications'));
 document.getElementById('logout-btn').addEventListener('click', e => { e.preventDefault(); logout(); });
+
+// ── Create Sprint ─────────────────────────────────────────────────────────
+async function submitSprint(e) {
+  e.preventDefault();
+  if (!S.selectedProject) { toast('Select a project first.', 'info'); return; }
+  const name     = document.getElementById('sprint-name').value.trim();
+  const goal     = document.getElementById('sprint-goal').value.trim();
+  const start    = document.getElementById('sprint-start').value;
+  const end      = document.getElementById('sprint-end').value;
+  const capacity = document.getElementById('sprint-capacity').value;
+  if (!name || !start || !end) return;
+  const btn = document.getElementById('btn-submit-sprint');
+  btn.disabled = true; btn.textContent = 'Creating…';
+  try {
+    await api.createSprint({
+      projectId: S.selectedProject.id,
+      name, goal,
+      startDate: start,
+      endDate: end,
+      capacity: capacity ? parseFloat(capacity) : null,
+    });
+    toast('Sprint created!', 'success');
+    closeModal('sprint');
+    document.getElementById('form-sprint').reset();
+    S.sprints = await api.getSprints(S.selectedProject.id) || [];
+    S.activeSprint = S.sprints.find(s => s.status === 'ACTIVE') || null;
+    renderSprintsPage();
+    renderSprintBanner();
+    renderDashStats();
+  } catch (err) {
+    toast('Failed to create sprint: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Sprint';
+  }
+}
+
+// ── Sprints page ──────────────────────────────────────────────────────────
+function renderSprintsPage() {
+  const el = document.getElementById('sprints-content');
+  if (!el) return;
+  if (S.sprints.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚡</div><h3>No sprints yet</h3><p>Create your first sprint to start planning.</p><button class="btn btn-primary" onclick="openModal('sprint')">New Sprint</button></div>`;
+    return;
+  }
+  const statusOrder = { ACTIVE: 0, PLANNED: 1, COMPLETED: 2, CANCELLED: 3 };
+  const sorted = [...S.sprints].sort((a, b) => (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9));
+  el.innerHTML = sorted.map(s => {
+    const statusClass = { ACTIVE: 'b-active', PLANNED: 'b-planned', COMPLETED: 'b-done', CANCELLED: 'b-todo' }[s.status] || 'b-todo';
+    const canStart    = s.status === 'PLANNED';
+    const canComplete = s.status === 'ACTIVE';
+    const canCancel   = s.status === 'PLANNED' || s.status === 'ACTIVE';
+    return `
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-head">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="card-title">${escHtml(s.name)}</div>
+              <span class="badge ${statusClass}">${s.status}</span>
+            </div>
+            <div class="card-sub">${fmtDate(s.startDate)} – ${fmtDate(s.endDate)}${s.capacity ? ` · ${s.capacity} pts capacity` : ''}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            ${canStart    ? `<button class="btn btn-primary" style="font-size:12px;" onclick="startSprint('${s.id}')">Start</button>` : ''}
+            ${canComplete ? `<button class="btn btn-default" style="font-size:12px;" onclick="promptCompleteSprint()">Complete</button>` : ''}
+            ${canCancel   ? `<button class="btn btn-danger"  style="font-size:12px;" onclick="cancelSprint('${s.id}')">Cancel</button>` : ''}
+          </div>
+        </div>
+        ${s.goal ? `<div class="card-body" style="font-size:13px;color:var(--text-2);">${escHtml(s.goal)}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+async function cancelSprint(sprintId) {
+  if (!confirm('Cancel this sprint?')) return;
+  try {
+    await api.deleteSprint(sprintId);
+    toast('Sprint cancelled.', 'success');
+    S.sprints = await api.getSprints(S.selectedProject.id) || [];
+    S.activeSprint = S.sprints.find(s => s.status === 'ACTIVE') || null;
+    renderSprintsPage();
+    renderSprintBanner();
+  } catch (e) {
+    toast('Failed to cancel sprint: ' + e.message, 'error');
+  }
+}
+
+// ── Add backlog item to sprint ─────────────────────────────────────────────
+async function addToSprint(workItemId, selectEl) {
+  const sprintId = selectEl.value;
+  if (!sprintId) return;
+  selectEl.value = '';
+  try {
+    await api.addWorkItemToSprint(sprintId, { workItemId });
+    // Update local state
+    const item = S.workItems.find(w => w.id === workItemId);
+    if (item) item.sprintId = sprintId;
+    toast('Added to sprint!', 'success');
+    renderBacklog();
+    renderBoard();
+    renderDashBoardMini();
+    renderDashStats();
+  } catch (e) {
+    toast('Failed to add to sprint: ' + e.message, 'error');
+  }
+}
+
+// ── Issue detail modal ────────────────────────────────────────────────────
+let currentIssueId = null;
+
+function openIssueDetail(id) {
+  const item = S.workItems.find(w => w.id === id);
+  if (!item) return;
+  currentIssueId = id;
+  const prefix = S.selectedProject ? issueKeyPrefix(S.selectedProject.name) : 'WI';
+  const key    = `${prefix}-${item.id.slice(-4).toUpperCase()}`;
+  document.getElementById('modal-issue-detail-title').textContent = key;
+
+  const memberOpts = S.members
+    .filter(m => m.userId)
+    .map(m => {
+      const n = S.memberNames[m.userId];
+      const label = n ? `${n.firstName} ${n.lastName}` : m.email;
+      return `<option value="${m.userId}"${item.assigneeId === m.userId ? ' selected' : ''}>${escHtml(label)}</option>`;
+    }).join('');
+
+  document.getElementById('issue-detail-body').innerHTML = `
+    <div class="field">
+      <label>Title</label>
+      <input type="text" id="detail-title" value="${escHtml(item.title)}" />
+    </div>
+    <div class="field">
+      <label>Description</label>
+      <textarea id="detail-desc">${escHtml(item.description || '')}</textarea>
+    </div>
+    <div class="field-row-2">
+      <div class="field">
+        <label>Status</label>
+        <select id="detail-status">
+          <option value="TODO"${item.status==='TODO'?' selected':''}>To Do</option>
+          <option value="IN_PROGRESS"${item.status==='IN_PROGRESS'?' selected':''}>In Progress</option>
+          <option value="DONE"${item.status==='DONE'?' selected':''}>Done</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Priority</label>
+        <select id="detail-priority">
+          <option value="HIGH"${item.priority==='HIGH'?' selected':''}>High</option>
+          <option value="MEDIUM"${item.priority==='MEDIUM'?' selected':''}>Medium</option>
+          <option value="LOW"${item.priority==='LOW'?' selected':''}>Low</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row-2">
+      <div class="field">
+        <label>Assignee</label>
+        <select id="detail-assignee">
+          <option value="">Unassigned</option>
+          ${memberOpts}
+        </select>
+      </div>
+      <div class="field">
+        <label>Story Points</label>
+        <input type="number" id="detail-est" min="0" value="${item.estimation != null ? item.estimation : ''}" />
+      </div>
+    </div>`;
+
+  openModal('issue-detail');
+}
+
+async function saveIssueChanges() {
+  if (!currentIssueId) return;
+  const item = S.workItems.find(w => w.id === currentIssueId);
+  if (!item) return;
+  const btn = document.getElementById('btn-save-issue');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    const updated = await api.updateWorkItem(currentIssueId, {
+      title:       document.getElementById('detail-title').value.trim(),
+      description: document.getElementById('detail-desc').value.trim(),
+      status:      document.getElementById('detail-status').value,
+      priority:    document.getElementById('detail-priority').value,
+      assigneeId:  document.getElementById('detail-assignee').value || null,
+      estimation:  document.getElementById('detail-est').value ? parseFloat(document.getElementById('detail-est').value) : null,
+      type:        item.type,
+      sprintId:    item.sprintId || null,
+    });
+    Object.assign(item, updated);
+    toast('Issue updated!', 'success');
+    closeModal('issue-detail');
+    renderBoard();
+    renderBacklog();
+    renderDashBoardMini();
+    renderDashStats();
+  } catch (e) {
+    toast('Failed to update issue: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save';
+  }
+}
+
+async function deleteCurrentIssue() {
+  if (!currentIssueId) return;
+  if (!confirm('Delete this issue? This cannot be undone.')) return;
+  try {
+    await api.deleteWorkItem(currentIssueId);
+    S.workItems = S.workItems.filter(w => w.id !== currentIssueId);
+    toast('Issue deleted.', 'success');
+    closeModal('issue-detail');
+    renderBoard();
+    renderBacklog();
+    renderDashBoardMini();
+    renderDashStats();
+  } catch (e) {
+    toast('Failed to delete issue: ' + e.message, 'error');
+  }
+}
+
+// ── Change member role ────────────────────────────────────────────────────
+async function changeRole(memberId, newRole) {
+  if (!S.selectedProject) return;
+  try {
+    await api.assignRole(S.selectedProject.id, memberId, { role: newRole });
+    const m = S.members.find(mb => mb.id === memberId);
+    if (m) m.role = newRole;
+    toast('Role updated!', 'success');
+  } catch (e) {
+    toast('Failed to update role: ' + e.message, 'error');
+    renderTeam();
+  }
+}
 
 // ── App init ──────────────────────────────────────────────────────────────
 async function init() {

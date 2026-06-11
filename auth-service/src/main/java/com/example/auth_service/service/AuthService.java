@@ -56,11 +56,12 @@ public class AuthService {
     public UserDTO getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return new UserDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail()
-        );
+        return new UserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
+    }
+
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email.trim().toLowerCase())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
     }
 }

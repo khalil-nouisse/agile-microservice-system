@@ -12,4 +12,6 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UU
     List<ProjectMember> findByProjectId(UUID projectId);
 
     Optional<ProjectMember> findByProjectIdAndEmail(UUID projectId, String email);
+
+    List<ProjectMember> findByUserIdAndStatus(UUID userId, com.example.project_service.model.MemberStatus status);
 }

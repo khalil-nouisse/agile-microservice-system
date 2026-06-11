@@ -522,7 +522,7 @@
           <div class="page-head">
             <h1 class="page-title">Sprints</h1>
             <div class="page-actions">
-              <button class="btn btn-primary" onclick="openModal('sprint')">
+              <button class="btn btn-primary" onclick="openSprintModal()">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" d="M12 5v14M5 12h14"/></svg>
                 New Sprint
               </button>
@@ -682,6 +682,10 @@
     <form id="form-sprint" onsubmit="submitSprint(event)">
       <div class="modal-body">
         <div class="field">
+          <label>Project</label>
+          <div id="sprint-modal-project" style="padding:7px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text-2);">—</div>
+        </div>
+        <div class="field">
           <label for="sprint-name">Sprint name <span style="color:var(--red)">*</span></label>
           <input type="text" id="sprint-name" placeholder="e.g. Sprint 1" required />
         </div>
@@ -736,7 +740,7 @@
 
 <script>
 // ── Config ────────────────────────────────────────────────────────────────
-const API = 'http://localhost:8080';
+const API = '';
 
 // ── State ─────────────────────────────────────────────────────────────────
 const S = {
@@ -756,11 +760,15 @@ const S = {
 const getToken  = () => localStorage.getItem('af_token');
 const getUserId = () => localStorage.getItem('af_userId');
 
+let _loggingOut = false;
 function logout() {
+  if (_loggingOut) return;
+  _loggingOut = true;
   localStorage.removeItem('af_token');
   localStorage.removeItem('af_userId');
   localStorage.removeItem('af_email');
-  window.location.href = 'login.html';
+  sessionStorage.setItem('logged_out', '1');
+  window.location.replace('/login.html');
 }
 
 // ── API layer ─────────────────────────────────────────────────────────────
@@ -802,6 +810,8 @@ const api = {
   assignRole:          (pid, mid, b) => apiFetch(`/api/projects/${pid}/members/${mid}/role`, { method: 'PUT', body: JSON.stringify(b) }),
   getNotifications:    (uid)         => apiFetch(`/api/notifications/user/${uid}`),
   markRead:            (id)          => apiFetch(`/api/notifications/${id}/read`, { method: 'PATCH' }),
+  acceptInvite:        (pid, mid)    => apiFetch(`/api/projects/${pid}/members/${mid}/accept`, { method: 'PATCH' }),
+  declineInvite:       (pid, mid)    => apiFetch(`/api/projects/${pid}/members/${mid}/decline`, { method: 'PATCH' }),
 };
 
 // ── Toast ─────────────────────────────────────────────────────────────────
@@ -935,7 +945,7 @@ function switchView(id) {
   if (id === 'sprints') renderSprintsPage();
   if (id === 'team') renderTeam();
   if (id === 'analytics') renderAnalytics();
-  if (id === 'notifications') renderNotificationsPage();
+  if (id === 'notifications') loadNotifications();
   if (id === 'projects') renderProjects();
 }
 
@@ -1202,9 +1212,12 @@ function renderTeam() {
           const color = strColor(m.userId || m.email);
           const roles = ['DEV','QA','SCRUM_MASTER','PRODUCT_OWNER'];
           const roleLabels = {DEV:'Developer',QA:'QA',SCRUM_MASTER:'Scrum Master',PRODUCT_OWNER:'Product Owner'};
-          const roleSelect = m.userId ? `<select onchange="changeRole('${m.id}', this.value)" style="font:12px inherit;border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text-2);background:var(--white);">
-            ${roles.map(r => `<option value="${r}"${m.role===r?' selected':''}>${roleLabels[r]}</option>`).join('')}
-          </select>` : statusBadge(m.status);
+          const isOwner = S.selectedProject && S.selectedProject.ownerId === getUserId();
+          const roleSelect = m.userId
+            ? `<select onchange="changeRole('${m.id}', this.value)" ${!isOwner ? 'disabled' : ''} style="font:12px inherit;border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text-2);background:var(--white);${!isOwner ? 'opacity:0.5;cursor:not-allowed;' : ''}">
+                ${roles.map(r => `<option value="${r}"${m.role===r?' selected':''}>${roleLabels[r]}</option>`).join('')}
+              </select>`
+            : statusBadge(m.status);
           return `<div class="member-row" role="listitem">
             <div class="ava-md" style="background:${color};" aria-hidden="true">${ini}</div>
             <div class="member-meta">
@@ -1228,6 +1241,17 @@ function notifRowHtml(n) {
       <div class="notif-body">
         <div class="notif-text">${escHtml(n.message)}</div>
         <div class="notif-meta">${timeAgo(n.createdAt)}</div>
+        ${n.type === 'MEMBER_INVITED' && n.referenceId && n.projectId ? `
+          <div style="display:flex;gap:6px;margin-top:6px;" onclick="event.stopPropagation()">
+            <button class="btn btn-primary" style="font-size:11px;padding:3px 10px;"
+              onclick="handleAcceptInvite('${n.projectId}','${n.referenceId}','${n.id}')">
+              Accept
+            </button>
+            <button class="btn btn-danger" style="font-size:11px;padding:3px 10px;"
+              onclick="handleDeclineInvite('${n.projectId}','${n.referenceId}','${n.id}')">
+              Decline
+            </button>
+          </div>` : ''}
       </div>
     </div>`;
 }
@@ -1251,6 +1275,43 @@ function renderNotificationsPage() {
   el.innerHTML = `<div role="list">${S.notifications.map(notifRowHtml).join('')}</div>`;
 }
 
+async function handleAcceptInvite(projectId, memberId, notifId) {
+  try {
+    await api.acceptInvite(projectId, memberId);
+    await api.markRead(notifId);
+    S.notifications = S.notifications.filter(n => n.id !== notifId);
+    renderDashNotifications();
+    renderNotificationsPage();
+    renderNotifBadge();
+    toast('Invitation accepted!', 'success');
+  } catch (e) {
+    toast('Failed to accept invitation: ' + e.message, 'error');
+  }
+}
+
+async function handleDeclineInvite(projectId, memberId, notifId) {
+  try {
+    await api.declineInvite(projectId, memberId);
+    await api.markRead(notifId);
+    S.notifications = S.notifications.filter(n => n.id !== notifId);
+    renderDashNotifications();
+    renderNotificationsPage();
+    renderNotifBadge();
+    toast('Invitation declined.', 'info');
+  } catch (e) {
+    toast('Failed to decline invitation: ' + e.message, 'error');
+  }
+}
+
+async function loadNotifications() {
+  try {
+    S.notifications = await api.getNotifications(getUserId()) || [];
+    renderDashNotifications();
+    renderNotificationsPage();
+    renderNotifBadge();
+  } catch { /* non-critical */ }
+}
+
 async function handleMarkRead(id, rowEl) {
   if (rowEl.querySelector('.notif-dot.read')) return;
   try {
@@ -1260,6 +1321,7 @@ async function handleMarkRead(id, rowEl) {
     rowEl.classList.remove('unread');
     const dot = rowEl.querySelector('.notif-dot');
     if (dot) { dot.classList.add('read'); dot.setAttribute('aria-label', 'Read'); }
+    renderDashNotifications();
     renderNotifBadge();
   } catch { /* non-critical */ }
 }
@@ -1267,10 +1329,7 @@ async function handleMarkRead(id, rowEl) {
 async function markAllRead() {
   const unread = S.notifications.filter(n => !n.isRead);
   await Promise.allSettled(unread.map(n => api.markRead(n.id)));
-  S.notifications.forEach(n => n.isRead = true);
-  renderDashNotifications();
-  renderNotificationsPage();
-  renderNotifBadge();
+  await loadNotifications();
   toast('All notifications marked as read', 'success');
 }
 
@@ -1286,7 +1345,7 @@ function renderProjects() {
     const abbr  = issueKeyPrefix(p.name);
     const items = S.workItems.filter(w => true); // workItems are for selected project only
     return `
-      <div class="project-card" tabindex="0" role="article" onclick="selectProject(${JSON.stringify({id:p.id,name:p.name}).replace(/"/g,'&quot;')})">
+      <div class="project-card" tabindex="0" role="article" onclick="selectProject(${JSON.stringify({id:p.id,name:p.name,ownerId:p.ownerId}).replace(/"/g,'&quot;')})">
         <div class="pc-top">
           <div class="pc-logo" style="background:${color};" aria-hidden="true">${abbr}</div>
           <div>
@@ -1587,7 +1646,7 @@ document.getElementById('project-switcher').addEventListener('click', e => {
     const active = S.selectedProject?.id === p.id;
     return `<div role="option" aria-selected="${active}" tabindex="0"
       style="display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:5px;cursor:pointer;${active?'background:var(--blue-bg);':''}"
-      onclick="dropdown.style.display='none'; selectProject(${JSON.stringify({id:p.id,name:p.name}).replace(/"/g,'&quot;')})">
+      onclick="dropdown.style.display='none'; selectProject(${JSON.stringify({id:p.id,name:p.name,ownerId:p.ownerId}).replace(/"/g,'&quot;')})">
       <div style="width:22px;height:22px;border-radius:4px;background:${color};color:#fff;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${abbr}</div>
       <span style="font-size:13px;font-weight:500;">${escHtml(p.name)}</span>
     </div>`;
@@ -1599,6 +1658,13 @@ document.addEventListener('click', e => { if (!dropdown.contains(e.target) && e.
 // ── Topbar buttons ────────────────────────────────────────────────────────
 document.getElementById('topbar-notif-btn').addEventListener('click', () => switchView('notifications'));
 document.getElementById('logout-btn').addEventListener('click', e => { e.preventDefault(); logout(); });
+
+// ── Open sprint modal ─────────────────────────────────────────────────────
+function openSprintModal() {
+  if (!S.selectedProject) { toast('Select a project first.', 'info'); return; }
+  document.getElementById('sprint-modal-project').textContent = S.selectedProject.name;
+  openModal('sprint');
+}
 
 // ── Create Sprint ─────────────────────────────────────────────────────────
 async function submitSprint(e) {
@@ -1640,7 +1706,7 @@ function renderSprintsPage() {
   const el = document.getElementById('sprints-content');
   if (!el) return;
   if (S.sprints.length === 0) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚡</div><h3>No sprints yet</h3><p>Create your first sprint to start planning.</p><button class="btn btn-primary" onclick="openModal('sprint')">New Sprint</button></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚡</div><h3>No sprints yet</h3><p>Create your first sprint to start planning.</p><button class="btn btn-primary" onclick="openSprintModal()">New Sprint</button></div>`;
     return;
   }
   const statusOrder = { ACTIVE: 0, PLANNED: 1, COMPLETED: 2, CANCELLED: 3 };
@@ -1658,7 +1724,7 @@ function renderSprintsPage() {
               <div class="card-title">${escHtml(s.name)}</div>
               <span class="badge ${statusClass}">${s.status}</span>
             </div>
-            <div class="card-sub">${fmtDate(s.startDate)} – ${fmtDate(s.endDate)}${s.capacity ? ` · ${s.capacity} pts capacity` : ''}</div>
+            <div class="card-sub">${S.selectedProject ? escHtml(S.selectedProject.name) + ' · ' : ''}${fmtDate(s.startDate)} – ${fmtDate(s.endDate)}${s.capacity ? ` · ${s.capacity} pts capacity` : ''}</div>
           </div>
           <div style="display:flex;gap:6px;">
             ${canStart    ? `<button class="btn btn-primary" style="font-size:12px;" onclick="startSprint('${s.id}')">Start</button>` : ''}
@@ -1754,7 +1820,7 @@ function openIssueDetail(id) {
     <div class="field-row-2">
       <div class="field">
         <label>Assignee</label>
-        <select id="detail-assignee">
+        <select id="detail-assignee" ${S.selectedProject && S.selectedProject.ownerId !== getUserId() ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}>
           <option value="">Unassigned</option>
           ${memberOpts}
         </select>
@@ -1834,7 +1900,7 @@ async function changeRole(memberId, newRole) {
 async function init() {
   const token  = getToken();
   const userId = getUserId();
-  if (!token || !userId) { window.location.href = 'login.html'; return; }
+  if (!token || !userId) { logout(); return; }
 
   try {
     // Load user info and projects in parallel

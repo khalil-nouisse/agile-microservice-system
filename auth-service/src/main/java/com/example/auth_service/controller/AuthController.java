@@ -32,4 +32,9 @@ public class AuthController {
     public ResponseEntity<UserDTO> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(authService.getUserById(id));
     }
+
+    @GetMapping("/users/by-email")
+    public ResponseEntity<UserDTO> getUserByEmail(@RequestParam String email) {
+        return ResponseEntity.ok(authService.getUserByEmail(email));
+    }
 }

@@ -13,7 +13,9 @@ public record NotificationResponse(
         String message,
         NotificationType type,
         @JsonProperty("isRead") boolean isRead,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        UUID referenceId,
+        UUID projectId
 ) {
     public static NotificationResponse from(Notification n) {
         return new NotificationResponse(
@@ -22,7 +24,9 @@ public record NotificationResponse(
                 n.getMessage(),
                 n.getType(),
                 n.isRead(),
-                n.getCreatedAt()
+                n.getCreatedAt(),
+                n.getReferenceId(),
+                n.getProjectId()
         );
     }
 }

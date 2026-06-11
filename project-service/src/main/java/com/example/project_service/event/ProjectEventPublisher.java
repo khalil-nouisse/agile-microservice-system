@@ -33,12 +33,14 @@ public class ProjectEventPublisher {
     }
 
     public void publishMemberInvited(ProjectMember member) {
-        publish("member.invited", member.getProject().getId(), Map.of(
-                "projectId", member.getProject().getId(),
-                "memberId", member.getId(),
-                "email", member.getEmail(),
-                "role", member.getRole().name()
-        ));
+        Map<String, Object> data = new java.util.HashMap<>();
+        data.put("projectId", member.getProject().getId());
+        data.put("memberId", member.getId());
+        data.put("email", member.getEmail());
+        data.put("role", member.getRole().name());
+        // userId is null when invited by email only; consumer must handle that
+        data.put("userId", member.getUserId() != null ? member.getUserId().toString() : null);
+        publish("member.invited", member.getProject().getId(), data);
     }
 
     public void publishRoleAssigned(ProjectMember member, ProjectRole previousRole) {

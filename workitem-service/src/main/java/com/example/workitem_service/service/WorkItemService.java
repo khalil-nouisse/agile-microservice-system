@@ -5,6 +5,7 @@ import com.example.workitem_service.dto.UpdateWorkItemRequest;
 import com.example.workitem_service.dto.WorkItemResponse;
 import com.example.workitem_service.event.WorkItemEventPublisher;
 import com.example.workitem_service.exception.BadRequestException;
+import com.example.workitem_service.exception.ForbiddenException;
 import com.example.workitem_service.exception.NotFoundException;
 import com.example.workitem_service.feign.ProjectClient;
 import com.example.workitem_service.model.WorkItem;
@@ -95,10 +96,18 @@ public class WorkItemService {
     }
 
     @Transactional
-    public WorkItemResponse updateWorkItem(UUID workItemId, UpdateWorkItemRequest request) {
+    public WorkItemResponse updateWorkItem(UUID workItemId, UpdateWorkItemRequest request, UUID callerId) {
         WorkItem item = findWorkItem(workItemId);
         String previousStatus = item.getStatus().name();
 
+        if (request.getAssigneeId() != null) {
+            ProjectClient.ProjectSummary project = projectClient.getProject(item.getProjectId());
+            if (!project.ownerId().equals(callerId)) {
+                throw new ForbiddenException("Only the project owner can assign members to tasks");
+            }
+            item.setAssigneeId(request.getAssigneeId());
+            eventPublisher.publishTaskAssigned(item);
+        }
         if (!isBlank(request.getTitle())) {
             item.setTitle(request.getTitle());
         }
@@ -114,10 +123,6 @@ public class WorkItemService {
         }
         if (request.getEstimation() != null) {
             item.setEstimation(request.getEstimation());
-        }
-        if (request.getAssigneeId() != null) {
-            item.setAssigneeId(request.getAssigneeId());
-            eventPublisher.publishTaskAssigned(item);
         }
         if (request.getSprintId() != null) {
             item.setSprintId(request.getSprintId());

@@ -393,7 +393,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:8080';
+  const API = '';
 
   // ── Tab switching ──────────────────────────────────────────
   function switchTab(tab) {
@@ -491,7 +491,7 @@
     try {
       const data = await apiPost('/api/auth/login', { email, password });
       saveAuth(data);
-      window.location.href = 'dashboard.html';
+      window.location.replace('/dashboard.html');
     } catch (err) {
       showAlert('signin', err.message || 'Invalid email or password.');
     } finally {
@@ -522,7 +522,7 @@
     try {
       const data = await apiPost('/api/auth/register', { firstName, lastName, email, password });
       saveAuth(data);
-      window.location.href = 'dashboard.html';
+      window.location.replace('/dashboard.html');
     } catch (err) {
       showAlert('signup', err.message || 'Registration failed. Please try again.');
     } finally {
@@ -530,9 +530,11 @@
     }
   });
 
-  // ── Redirect if already logged in ────────────────────────
-  if (localStorage.getItem('af_token')) {
-    window.location.href = 'dashboard.html';
+  // ── Redirect if already logged in (skip if we just logged out) ──
+  const _justLoggedOut = sessionStorage.getItem('logged_out');
+  sessionStorage.removeItem('logged_out');
+  if (!_justLoggedOut && localStorage.getItem('af_token') && localStorage.getItem('af_userId')) {
+    window.location.replace('/dashboard.html');
   }
 </script>
 </body>

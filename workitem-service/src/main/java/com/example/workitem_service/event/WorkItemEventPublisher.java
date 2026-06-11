@@ -21,8 +21,8 @@ public class WorkItemEventPublisher {
 
     public void publishTaskAssigned(WorkItem item) {
         kafkaTemplate.send("task.assigned", item.getId().toString(),
-                String.format("{\"taskId\":\"%s\",\"assigneeId\":\"%s\",\"projectId\":\"%s\"}",
-                        item.getId(), item.getAssigneeId(), item.getProjectId()));
+                String.format("{\"taskId\":\"%s\",\"title\":\"%s\",\"assigneeId\":\"%s\",\"projectId\":\"%s\"}",
+                        item.getId(), item.getTitle().replace("\"", "\\\""), item.getAssigneeId(), item.getProjectId()));
     }
 
     public void publishTaskStatusChanged(WorkItem item, String previousStatus) {

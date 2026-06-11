@@ -7,6 +7,7 @@ import com.example.project_service.dto.ProjectMemberResponse;
 import com.example.project_service.dto.ProjectResponse;
 import com.example.project_service.event.ProjectEventPublisher;
 import com.example.project_service.exception.BadRequestException;
+import com.example.project_service.feign.AuthServiceClient;
 import com.example.project_service.model.AgileMethodology;
 import com.example.project_service.model.Project;
 import com.example.project_service.model.ProjectMember;
@@ -40,6 +41,9 @@ class ProjectServiceTest {
 
     @Mock
     private ProjectEventPublisher eventPublisher;
+
+    @Mock
+    private AuthServiceClient authServiceClient;
 
     @InjectMocks
     private ProjectService projectService;
@@ -89,10 +93,12 @@ class ProjectServiceTest {
         UUID projectId = UUID.randomUUID();
         UUID memberId = UUID.randomUUID();
 
+        UUID ownerId = UUID.randomUUID();
+
         Project project = new Project();
         ReflectionTestUtils.setField(project, "id", projectId);
         project.setName("Agile Platform");
-        project.setOwnerId(UUID.randomUUID());
+        project.setOwnerId(ownerId);
 
         ProjectMember member = new ProjectMember();
         ReflectionTestUtils.setField(member, "id", memberId);
@@ -107,7 +113,7 @@ class ProjectServiceTest {
         when(memberRepository.findById(memberId)).thenReturn(Optional.of(member));
         when(memberRepository.save(member)).thenReturn(member);
 
-        ProjectMemberResponse response = projectService.assignRole(projectId, memberId, request);
+        ProjectMemberResponse response = projectService.assignRole(projectId, memberId, request, ownerId);
 
         assertEquals(ProjectRole.SCRUM_MASTER, response.getRole());
         verify(eventPublisher).publishRoleAssigned(member, ProjectRole.QA);

@@ -34,15 +34,15 @@ public class WorkItemEventConsumer {
         }
     }
 
-    // Payload: { "taskId": "...", "assigneeId": "...", "projectId": "..." }
+    // Payload: { "taskId": "...", "title": "...", "assigneeId": "...", "projectId": "..." }
     @KafkaListener(topics = "task.assigned", groupId = "notification-group")
     public void onTaskAssigned(String message) {
         try {
             JsonNode root = objectMapper.readTree(message);
             UUID assigneeId = UUID.fromString(root.get("assigneeId").asText());
-            UUID taskId = UUID.fromString(root.get("taskId").asText());
+            String title = root.get("title").asText();
             notificationService.save(assigneeId,
-                    "You have been assigned to task: " + taskId + ".",
+                    "You have been assigned to task: '" + title + "'.",
                     NotificationType.TASK_ASSIGNED);
         } catch (Exception e) {
             log.error("Failed to process task.assigned: {}", e.getMessage());

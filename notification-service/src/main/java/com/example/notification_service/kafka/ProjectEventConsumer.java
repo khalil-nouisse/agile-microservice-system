@@ -34,16 +34,25 @@ public class ProjectEventConsumer {
         }
     }
 
-    // Payload: { "eventType": "member.invited", "occurredAt": "...", "data": { "projectId", "memberId", "email", "role" } }
+    // Payload: { "eventType": "member.invited", "occurredAt": "...", "data": { "projectId", "memberId", "userId", "email", "role" } }
     @KafkaListener(topics = "member.invited", groupId = "notification-group")
     public void onMemberInvited(String message) {
         try {
             JsonNode data = objectMapper.readTree(message).get("data");
-            UUID memberId = UUID.fromString(data.get("memberId").asText());
-            String role = data.get("role").asText();
-            notificationService.save(memberId,
+            JsonNode userIdNode = data.get("userId");
+            if (userIdNode == null || userIdNode.isNull()) {
+                log.warn("member.invited event has no userId — cannot route notification");
+                return;
+            }
+            UUID userId    = UUID.fromString(userIdNode.asText());
+            UUID memberId  = UUID.fromString(data.get("memberId").asText());
+            UUID projectId = UUID.fromString(data.get("projectId").asText());
+            String role    = data.get("role").asText();
+            notificationService.save(userId,
                     "You have been invited to a project with role: " + role + ".",
-                    NotificationType.MEMBER_INVITED);
+                    NotificationType.MEMBER_INVITED,
+                    memberId,
+                    projectId);
         } catch (Exception e) {
             log.error("Failed to process member.invited: {}", e.getMessage());
         }

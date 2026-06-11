@@ -24,6 +24,14 @@ public class Notification {
     @Column(nullable = false)
     private NotificationType type;
 
+    // For MEMBER_INVITED: stores the ProjectMember record ID so the frontend can call accept/decline
+    @Column(name = "reference_id")
+    private UUID referenceId;
+
+    // For MEMBER_INVITED: stores the project ID so the frontend knows which project
+    @Column(name = "project_id")
+    private UUID projectId;
+
     @Column(name = "is_read", nullable = false)
     private boolean isRead = false;
 

@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,8 +35,8 @@ public class ProjectController {
     }
 
     @GetMapping
-    public List<ProjectResponse> getAllProjects() {
-        return projectService.getAllProjects();
+    public List<ProjectResponse> getAllProjects(@RequestHeader("X-User-Id") String userId) {
+        return projectService.getAllProjects(parseUserId(userId));
     }
 
     @GetMapping("/{projectId}")
@@ -82,13 +83,31 @@ public class ProjectController {
                 .body(projectService.inviteMember(projectId, request));
     }
 
+    @PatchMapping("/{projectId}/members/{memberId}/accept")
+    public ResponseEntity<ProjectMemberResponse> acceptInvitation(
+            @PathVariable UUID projectId,
+            @PathVariable UUID memberId
+    ) {
+        return ResponseEntity.ok(projectService.acceptInvitation(projectId, memberId));
+    }
+
+    @PatchMapping("/{projectId}/members/{memberId}/decline")
+    public ResponseEntity<Void> declineInvitation(
+            @PathVariable UUID projectId,
+            @PathVariable UUID memberId
+    ) {
+        projectService.declineInvitation(projectId, memberId);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{projectId}/members/{memberId}/role")
     public ProjectMemberResponse assignRole(
             @PathVariable UUID projectId,
             @PathVariable UUID memberId,
-            @RequestBody AssignRoleRequest request
+            @RequestBody AssignRoleRequest request,
+            @RequestHeader("X-User-Id") String userId
     ) {
-        return projectService.assignRole(projectId, memberId, request);
+        return projectService.assignRole(projectId, memberId, request, parseUserId(userId));
     }
 
     private UUID parseUserId(String userId) {

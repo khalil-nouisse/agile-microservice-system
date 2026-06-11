@@ -22,10 +22,17 @@ public class NotificationService {
 
     @Transactional
     public void save(UUID userId, String message, NotificationType type) {
+        save(userId, message, type, null, null);
+    }
+
+    @Transactional
+    public void save(UUID userId, String message, NotificationType type, UUID referenceId, UUID projectId) {
         Notification notification = new Notification();
         notification.setUserId(userId);
         notification.setMessage(message);
         notification.setType(type);
+        notification.setReferenceId(referenceId);
+        notification.setProjectId(projectId);
         repository.save(notification);
         log.info("Saved notification type={} userId={}", type, userId);
     }

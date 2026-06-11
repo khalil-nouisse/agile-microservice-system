@@ -8,8 +8,9 @@ import com.example.project_service.dto.ProjectResponse;
 import com.example.project_service.dto.UpdateProjectRequest;
 import com.example.project_service.event.ProjectEventPublisher;
 import com.example.project_service.exception.BadRequestException;
+import com.example.project_service.exception.ForbiddenException;
 import com.example.project_service.exception.NotFoundException;
-import com.example.project_service.model.AgileMethodology;
+import com.example.project_service.feign.AuthServiceClient;
 import com.example.project_service.model.MemberStatus;
 import com.example.project_service.model.Project;
 import com.example.project_service.model.ProjectMember;
@@ -29,20 +30,28 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository memberRepository;
     private final ProjectEventPublisher eventPublisher;
+    private final AuthServiceClient authServiceClient;
 
     public ProjectService(
             ProjectRepository projectRepository,
             ProjectMemberRepository memberRepository,
-            ProjectEventPublisher eventPublisher
+            ProjectEventPublisher eventPublisher,
+            AuthServiceClient authServiceClient
     ) {
         this.projectRepository = projectRepository;
         this.memberRepository = memberRepository;
         this.eventPublisher = eventPublisher;
+        this.authServiceClient = authServiceClient;
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectResponse> getAllProjects() {
-        return projectRepository.findAll()
+    public List<ProjectResponse> getAllProjects(UUID userId) {
+        List<UUID> projectIds = memberRepository
+                .findByUserIdAndStatus(userId, MemberStatus.ACTIVE)
+                .stream()
+                .map(m -> m.getProject().getId())
+                .toList();
+        return projectRepository.findAllById(projectIds)
                 .stream()
                 .map(ProjectResponse::from)
                 .toList();
@@ -138,10 +147,19 @@ public class ProjectService {
                     throw new BadRequestException("Member is already invited to this project");
                 });
 
+        // Resolve the real userId from auth-service so the invitation notification
+        // reaches the right user. Fail fast if the email has no account yet.
+        UUID userId;
+        try {
+            userId = authServiceClient.getUserByEmail(email).id();
+        } catch (Exception e) {
+            throw new BadRequestException("No account found for email: " + email);
+        }
+
         ProjectMember member = new ProjectMember();
         member.setProject(project);
         member.setEmail(email);
-        member.setUserId(request.getUserId());
+        member.setUserId(userId);
         member.setRole(request.getRole());
 
         ProjectMember savedMember = memberRepository.save(member);
@@ -151,9 +169,38 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectMemberResponse assignRole(UUID projectId, UUID memberId, AssignRoleRequest request) {
+    public ProjectMemberResponse acceptInvitation(UUID projectId, UUID memberId) {
         findProject(projectId);
+        ProjectMember member = memberRepository.findById(memberId)
+                .filter(m -> m.getProject().getId().equals(projectId))
+                .orElseThrow(() -> new NotFoundException("Invitation not found"));
+        if (member.getStatus() != MemberStatus.INVITED) {
+            throw new BadRequestException("Invitation is not in INVITED state");
+        }
+        member.setStatus(MemberStatus.ACTIVE);
+        return ProjectMemberResponse.from(memberRepository.save(member));
+    }
 
+    @Transactional
+    public void declineInvitation(UUID projectId, UUID memberId) {
+        findProject(projectId);
+        ProjectMember member = memberRepository.findById(memberId)
+                .filter(m -> m.getProject().getId().equals(projectId))
+                .orElseThrow(() -> new NotFoundException("Invitation not found"));
+        if (member.getStatus() != MemberStatus.INVITED) {
+            throw new BadRequestException("Invitation is not in INVITED state");
+        }
+        member.setStatus(MemberStatus.DECLINED);
+        memberRepository.save(member);
+    }
+
+    @Transactional
+    public ProjectMemberResponse assignRole(UUID projectId, UUID memberId, AssignRoleRequest request, UUID callerId) {
+        Project project = findProject(projectId);
+
+        if (!project.getOwnerId().equals(callerId)) {
+            throw new ForbiddenException("Only the project owner can change member roles");
+        }
         if (request.getRole() == null) {
             throw new BadRequestException("Role is required");
         }

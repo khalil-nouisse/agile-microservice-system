@@ -47,9 +47,10 @@ public class WorkItemController {
     @PutMapping("/{workItemId}")
     public WorkItemResponse updateWorkItem(
             @PathVariable UUID workItemId,
-            @RequestBody UpdateWorkItemRequest request
+            @RequestBody UpdateWorkItemRequest request,
+            @RequestHeader("X-User-Id") String userId
     ) {
-        return workItemService.updateWorkItem(workItemId, request);
+        return workItemService.updateWorkItem(workItemId, request, UUID.fromString(userId));
     }
 
     @DeleteMapping("/{workItemId}")
